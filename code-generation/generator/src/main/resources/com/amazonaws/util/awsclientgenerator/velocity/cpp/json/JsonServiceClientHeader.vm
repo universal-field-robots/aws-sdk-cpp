@@ -82,11 +82,7 @@ namespace Model
    * ${serviceModel.documentation}
    */
 #end
-#set($finalClass = " final")
-#if($serviceModel.enableVirtualOperations)
-#set($finalClass = "")
-#end
-  class ${CppViewHelper.computeExportValue($metadata.classNamePrefix)} ${className}${finalClass} : public Aws::Client::AWSJsonClient
+  class ${CppViewHelper.computeExportValue($metadata.classNamePrefix)} ${className} : public Aws::Client::AWSJsonClient
   {
     public:
       typedef Aws::Client::AWSJsonClient BASECLASS;
@@ -98,9 +94,6 @@ namespace Model
       void OverrideEndpoint(const Aws::String& endpoint);
     private:
       void init(const Aws::Client::ClientConfiguration& clientConfiguration);
-#if($metadata.hasEndpointDiscoveryTrait)
-      void Load${metadata.classNamePrefix}SpecificConfig(const Aws::Client::ClientConfiguration& clientConfiguration);
-#end
 #parse("com/amazonaws/util/awsclientgenerator/velocity/cpp/ServiceClientHeaderAsyncHelpers.vm")
 
 #if($metadata.hasEndpointTrait)

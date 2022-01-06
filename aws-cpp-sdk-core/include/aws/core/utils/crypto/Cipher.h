@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 #pragma once
 
@@ -36,6 +46,7 @@ namespace Aws
                         m_initializationVector(ivSize > 0 ? GenerateIV(ivSize, ivGenerationInCtrMode) : 0),
                         m_failure(false)
                 {
+                    Validate();
                 }
 
                 /**
@@ -47,6 +58,7 @@ namespace Aws
                         m_tag(tag),
                         m_failure(false)
                 {
+                    Validate();
                 }
 
                 /**
@@ -55,9 +67,10 @@ namespace Aws
                 SymmetricCipher(CryptoBuffer&& key, CryptoBuffer&& initializationVector, CryptoBuffer&& tag = CryptoBuffer(0)) :
                         m_key(std::move(key)),
                         m_initializationVector(std::move(initializationVector)),
-                        m_tag(std::move(tag)),
+                        m_tag(std::move(tag)),  
                         m_failure(false)
                 {
+                    Validate();
                 }
 
                 SymmetricCipher(const SymmetricCipher& other) = delete;
@@ -74,6 +87,7 @@ namespace Aws
                         m_tag(std::move(toMove.m_tag)),
                         m_failure(toMove.m_failure)
                 {
+                    Validate();
                 }
 
                 /**
@@ -88,6 +102,8 @@ namespace Aws
                     m_tag = std::move(toMove.m_tag);
                     m_failure = toMove.m_failure;
 
+                    Validate();
+
                     return *this;
                 }
 
@@ -100,7 +116,7 @@ namespace Aws
                 virtual operator bool() const { return Good(); }
 
                 /**
-                 * Encrypt a buffer of data. Part of the contract for this interface is that intention that
+                 * Encrypt a buffer of data. Part of the contract for this interface is that intention that 
                  * a user call this function multiple times for a large stream. As such, multiple calls to this function
                  * on the same instance should produce valid sequential output for an encrypted stream.
                  */
@@ -149,16 +165,18 @@ namespace Aws
                 /**
                  * Generates a non-deterministic random symmetric key. Default (and minimum bar for security) is 256 bits.
                  */
-                static CryptoBuffer GenerateKey(size_t keyLengthBytes = SYMMETRIC_KEY_LENGTH);
+                static CryptoBuffer GenerateKey(size_t keyLengthBytes = SYMMETRIC_KEY_LENGTH);                
 
             protected:
-
                 SymmetricCipher() : m_failure(false) {}
 
                 CryptoBuffer m_key;
                 CryptoBuffer m_initializationVector;
                 CryptoBuffer m_tag;
                 bool m_failure;
+
+            private:
+                void Validate();
             };
 
             /**
@@ -176,18 +194,11 @@ namespace Aws
                 /**
                  * Factory method. Returns cipher implementation. See the SymmetricCipher class for more details.
                  */
-                virtual std::shared_ptr<SymmetricCipher> CreateImplementation(const CryptoBuffer& key, const CryptoBuffer*) const
-                {
-                    return CreateImplementation(key);
-                }
+                virtual std::shared_ptr<SymmetricCipher> CreateImplementation(const CryptoBuffer& key, const CryptoBuffer& iv, const CryptoBuffer& tag = CryptoBuffer(0)) const = 0;
                 /**
                  * Factory method. Returns cipher implementation. See the SymmetricCipher class for more details.
                  */
-                virtual std::shared_ptr<SymmetricCipher> CreateImplementation(const CryptoBuffer& key, const CryptoBuffer& iv, const CryptoBuffer& tag = CryptoBuffer(0), const CryptoBuffer& aad = CryptoBuffer(0)) const = 0;
-                /**
-                 * Factory method. Returns cipher implementation. See the SymmetricCipher class for more details.
-                 */
-                virtual std::shared_ptr<SymmetricCipher> CreateImplementation(CryptoBuffer&& key, CryptoBuffer&& iv, CryptoBuffer&& tag = CryptoBuffer(0), CryptoBuffer&& aad = CryptoBuffer(0)) const = 0;
+                virtual std::shared_ptr<SymmetricCipher> CreateImplementation(CryptoBuffer&& key, CryptoBuffer&& iv, CryptoBuffer&& tag = CryptoBuffer(0)) const = 0;
 
                 /**
                  * Only called once per factory, your chance to make static library calls for setup.

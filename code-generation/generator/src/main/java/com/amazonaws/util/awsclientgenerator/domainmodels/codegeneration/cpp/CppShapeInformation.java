@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 package com.amazonaws.util.awsclientgenerator.domainmodels.codegeneration.cpp;
 
@@ -34,7 +44,7 @@ public class CppShapeInformation {
        exportValue = CppViewHelper.computeExportValue(serviceModel.getMetadata().getClassNamePrefix());
        cppType = CppViewHelper.computeCppType(shape);
        headerIncludes = CppViewHelper.computeHeaderIncludes(serviceModel.getMetadata().getProjectName(), shape);
-       sourceIncludes = CppViewHelper.computeSourceIncludes(serviceModel.getMetadata().getProjectName(), shape);
+       sourceIncludes = CppViewHelper.computeSourceIncludes(shape);
        baseClass = CppViewHelper.computeBaseClass(serviceModel.getMetadata().getClassNamePrefix(), shape);
        requestContentType = CppViewHelper.computeRequestContentType(serviceModel.getMetadata());
    }

@@ -1,6 +1,16 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+/*
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ *  http://aws.amazon.com/apache2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
  */
 #include <aws/core/utils/stream/ConcurrentStreamBuf.h>
 #include <aws/core/utils/logging/LogMacros.h>
@@ -42,11 +52,7 @@ namespace Aws
                     // scope the lock
                     {
                         std::unique_lock<std::mutex> lock(m_lock);
-                        m_signal.wait(lock, [this, bitslen]{ return m_eof || bitslen <= (m_backbuf.capacity() - m_backbuf.size()); });
-                        if (m_eof)
-                        {
-                            return;
-                        }
+                        m_signal.wait(lock, [this, bitslen]{ return bitslen <= (m_backbuf.capacity() - m_backbuf.size()); });
                         std::copy(pbase(), pptr(), std::back_inserter(m_backbuf));
                     }
                     m_signal.notify_one();
@@ -89,10 +95,7 @@ namespace Aws
             std::streamsize ConcurrentStreamBuf::showmanyc()
             {
                 std::unique_lock<std::mutex> lock(m_lock);
-                if (!m_backbuf.empty())
-                {
-                    AWS_LOGSTREAM_TRACE(TAG, "Stream characters in buffer: " << m_backbuf.size());
-                }
+                AWS_LOGSTREAM_TRACE(TAG, "stream how many character? " << m_backbuf.size());
                 return m_backbuf.size();
             }
 
@@ -107,16 +110,9 @@ namespace Aws
                 }
 
                 FlushPutArea();
-                {
-                    std::unique_lock<std::mutex> lock(m_lock);
-                    if (m_eof)
-                    {
-                        return eof;
-                    }
-                    *pptr() = static_cast<char>(ch);
-                    pbump(1);
-                    return ch;
-                }
+                *pptr() = static_cast<char>(ch);
+                pbump(1);
+                return ch;
             }
 
             int ConcurrentStreamBuf::sync()

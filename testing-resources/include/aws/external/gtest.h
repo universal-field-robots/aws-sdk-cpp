@@ -11883,7 +11883,7 @@ class ValueArray2 {
 
  private:
   // No implementation - assignment is unsupported.
-  void operator=(const ValueArray2&)=delete;
+  void operator=(const ValueArray2& other);
 
   const T1 v1_;
   const T2 v2_;

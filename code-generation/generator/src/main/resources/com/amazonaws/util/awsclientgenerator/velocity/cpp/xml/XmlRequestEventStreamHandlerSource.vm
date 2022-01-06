@@ -53,6 +53,8 @@ namespace Model
 
     void ${operation.name}Handler::OnEvent()
     {
+        using namespace Aws::Utils::Event;
+
         // Handler internal error during event stream decoding.
         if (!*this)
         {
@@ -70,13 +72,13 @@ namespace Model
             return;
         }
 
-        switch (Aws::Utils::Event::Message::GetMessageTypeForName(messageTypeHeaderIter->second.GetEventHeaderValueAsString()))
+        switch (Message::GetMessageTypeForName(messageTypeHeaderIter->second.GetEventHeaderValueAsString()))
         {
-        case Aws::Utils::Event::Message::MessageType::EVENT:
+        case Message::MessageType::EVENT:
             HandleEventInMessage();
             break;
-        case Aws::Utils::Event::Message::MessageType::REQUEST_LEVEL_ERROR:
-        case Aws::Utils::Event::Message::MessageType::REQUEST_LEVEL_EXCEPTION:
+        case Message::MessageType::REQUEST_LEVEL_ERROR:
+        case Message::MessageType::REQUEST_LEVEL_EXCEPTION:
         {
             HandleErrorInMessage();
             break;

@@ -1,7 +1,17 @@
-﻿/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+﻿/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 #pragma once
 #include <aws/s3/S3_EXPORTS.h>
@@ -46,78 +56,78 @@ namespace Model
 
 
     /**
-     * <p>The bucket whose Object Lock configuration you want to create or replace.</p>
+     * <p>The bucket whose object lock configuration you want to create or replace.</p>
      */
     inline const Aws::String& GetBucket() const{ return m_bucket; }
 
     /**
-     * <p>The bucket whose Object Lock configuration you want to create or replace.</p>
+     * <p>The bucket whose object lock configuration you want to create or replace.</p>
      */
     inline bool BucketHasBeenSet() const { return m_bucketHasBeenSet; }
 
     /**
-     * <p>The bucket whose Object Lock configuration you want to create or replace.</p>
+     * <p>The bucket whose object lock configuration you want to create or replace.</p>
      */
     inline void SetBucket(const Aws::String& value) { m_bucketHasBeenSet = true; m_bucket = value; }
 
     /**
-     * <p>The bucket whose Object Lock configuration you want to create or replace.</p>
+     * <p>The bucket whose object lock configuration you want to create or replace.</p>
      */
     inline void SetBucket(Aws::String&& value) { m_bucketHasBeenSet = true; m_bucket = std::move(value); }
 
     /**
-     * <p>The bucket whose Object Lock configuration you want to create or replace.</p>
+     * <p>The bucket whose object lock configuration you want to create or replace.</p>
      */
     inline void SetBucket(const char* value) { m_bucketHasBeenSet = true; m_bucket.assign(value); }
 
     /**
-     * <p>The bucket whose Object Lock configuration you want to create or replace.</p>
+     * <p>The bucket whose object lock configuration you want to create or replace.</p>
      */
     inline PutObjectLockConfigurationRequest& WithBucket(const Aws::String& value) { SetBucket(value); return *this;}
 
     /**
-     * <p>The bucket whose Object Lock configuration you want to create or replace.</p>
+     * <p>The bucket whose object lock configuration you want to create or replace.</p>
      */
     inline PutObjectLockConfigurationRequest& WithBucket(Aws::String&& value) { SetBucket(std::move(value)); return *this;}
 
     /**
-     * <p>The bucket whose Object Lock configuration you want to create or replace.</p>
+     * <p>The bucket whose object lock configuration you want to create or replace.</p>
      */
     inline PutObjectLockConfigurationRequest& WithBucket(const char* value) { SetBucket(value); return *this;}
 
 
     /**
-     * <p>The Object Lock configuration that you want to apply to the specified
+     * <p>The object lock configuration that you want to apply to the specified
      * bucket.</p>
      */
     inline const ObjectLockConfiguration& GetObjectLockConfiguration() const{ return m_objectLockConfiguration; }
 
     /**
-     * <p>The Object Lock configuration that you want to apply to the specified
+     * <p>The object lock configuration that you want to apply to the specified
      * bucket.</p>
      */
     inline bool ObjectLockConfigurationHasBeenSet() const { return m_objectLockConfigurationHasBeenSet; }
 
     /**
-     * <p>The Object Lock configuration that you want to apply to the specified
+     * <p>The object lock configuration that you want to apply to the specified
      * bucket.</p>
      */
     inline void SetObjectLockConfiguration(const ObjectLockConfiguration& value) { m_objectLockConfigurationHasBeenSet = true; m_objectLockConfiguration = value; }
 
     /**
-     * <p>The Object Lock configuration that you want to apply to the specified
+     * <p>The object lock configuration that you want to apply to the specified
      * bucket.</p>
      */
     inline void SetObjectLockConfiguration(ObjectLockConfiguration&& value) { m_objectLockConfigurationHasBeenSet = true; m_objectLockConfiguration = std::move(value); }
 
     /**
-     * <p>The Object Lock configuration that you want to apply to the specified
+     * <p>The object lock configuration that you want to apply to the specified
      * bucket.</p>
      */
     inline PutObjectLockConfigurationRequest& WithObjectLockConfiguration(const ObjectLockConfiguration& value) { SetObjectLockConfiguration(value); return *this;}
 
     /**
-     * <p>The Object Lock configuration that you want to apply to the specified
+     * <p>The object lock configuration that you want to apply to the specified
      * bucket.</p>
      */
     inline PutObjectLockConfigurationRequest& WithObjectLockConfiguration(ObjectLockConfiguration&& value) { SetObjectLockConfiguration(std::move(value)); return *this;}
@@ -143,158 +153,93 @@ namespace Model
 
 
     /**
-     * <p>A token to allow Object Lock to be enabled for an existing bucket.</p>
+     * <p>A token to allow Amazon S3 object lock to be enabled for an existing
+     * bucket.</p>
      */
     inline const Aws::String& GetToken() const{ return m_token; }
 
     /**
-     * <p>A token to allow Object Lock to be enabled for an existing bucket.</p>
+     * <p>A token to allow Amazon S3 object lock to be enabled for an existing
+     * bucket.</p>
      */
     inline bool TokenHasBeenSet() const { return m_tokenHasBeenSet; }
 
     /**
-     * <p>A token to allow Object Lock to be enabled for an existing bucket.</p>
+     * <p>A token to allow Amazon S3 object lock to be enabled for an existing
+     * bucket.</p>
      */
     inline void SetToken(const Aws::String& value) { m_tokenHasBeenSet = true; m_token = value; }
 
     /**
-     * <p>A token to allow Object Lock to be enabled for an existing bucket.</p>
+     * <p>A token to allow Amazon S3 object lock to be enabled for an existing
+     * bucket.</p>
      */
     inline void SetToken(Aws::String&& value) { m_tokenHasBeenSet = true; m_token = std::move(value); }
 
     /**
-     * <p>A token to allow Object Lock to be enabled for an existing bucket.</p>
+     * <p>A token to allow Amazon S3 object lock to be enabled for an existing
+     * bucket.</p>
      */
     inline void SetToken(const char* value) { m_tokenHasBeenSet = true; m_token.assign(value); }
 
     /**
-     * <p>A token to allow Object Lock to be enabled for an existing bucket.</p>
+     * <p>A token to allow Amazon S3 object lock to be enabled for an existing
+     * bucket.</p>
      */
     inline PutObjectLockConfigurationRequest& WithToken(const Aws::String& value) { SetToken(value); return *this;}
 
     /**
-     * <p>A token to allow Object Lock to be enabled for an existing bucket.</p>
+     * <p>A token to allow Amazon S3 object lock to be enabled for an existing
+     * bucket.</p>
      */
     inline PutObjectLockConfigurationRequest& WithToken(Aws::String&& value) { SetToken(std::move(value)); return *this;}
 
     /**
-     * <p>A token to allow Object Lock to be enabled for an existing bucket.</p>
+     * <p>A token to allow Amazon S3 object lock to be enabled for an existing
+     * bucket.</p>
      */
     inline PutObjectLockConfigurationRequest& WithToken(const char* value) { SetToken(value); return *this;}
 
 
     /**
-     * <p>The MD5 hash for the request body.</p> <p>For requests made using the Amazon
-     * Web Services Command Line Interface (CLI) or Amazon Web Services SDKs, this
-     * field is calculated automatically.</p>
+     * <p>The MD5 hash for the request body.</p>
      */
     inline const Aws::String& GetContentMD5() const{ return m_contentMD5; }
 
     /**
-     * <p>The MD5 hash for the request body.</p> <p>For requests made using the Amazon
-     * Web Services Command Line Interface (CLI) or Amazon Web Services SDKs, this
-     * field is calculated automatically.</p>
+     * <p>The MD5 hash for the request body.</p>
      */
     inline bool ContentMD5HasBeenSet() const { return m_contentMD5HasBeenSet; }
 
     /**
-     * <p>The MD5 hash for the request body.</p> <p>For requests made using the Amazon
-     * Web Services Command Line Interface (CLI) or Amazon Web Services SDKs, this
-     * field is calculated automatically.</p>
+     * <p>The MD5 hash for the request body.</p>
      */
     inline void SetContentMD5(const Aws::String& value) { m_contentMD5HasBeenSet = true; m_contentMD5 = value; }
 
     /**
-     * <p>The MD5 hash for the request body.</p> <p>For requests made using the Amazon
-     * Web Services Command Line Interface (CLI) or Amazon Web Services SDKs, this
-     * field is calculated automatically.</p>
+     * <p>The MD5 hash for the request body.</p>
      */
     inline void SetContentMD5(Aws::String&& value) { m_contentMD5HasBeenSet = true; m_contentMD5 = std::move(value); }
 
     /**
-     * <p>The MD5 hash for the request body.</p> <p>For requests made using the Amazon
-     * Web Services Command Line Interface (CLI) or Amazon Web Services SDKs, this
-     * field is calculated automatically.</p>
+     * <p>The MD5 hash for the request body.</p>
      */
     inline void SetContentMD5(const char* value) { m_contentMD5HasBeenSet = true; m_contentMD5.assign(value); }
 
     /**
-     * <p>The MD5 hash for the request body.</p> <p>For requests made using the Amazon
-     * Web Services Command Line Interface (CLI) or Amazon Web Services SDKs, this
-     * field is calculated automatically.</p>
+     * <p>The MD5 hash for the request body.</p>
      */
     inline PutObjectLockConfigurationRequest& WithContentMD5(const Aws::String& value) { SetContentMD5(value); return *this;}
 
     /**
-     * <p>The MD5 hash for the request body.</p> <p>For requests made using the Amazon
-     * Web Services Command Line Interface (CLI) or Amazon Web Services SDKs, this
-     * field is calculated automatically.</p>
+     * <p>The MD5 hash for the request body.</p>
      */
     inline PutObjectLockConfigurationRequest& WithContentMD5(Aws::String&& value) { SetContentMD5(std::move(value)); return *this;}
 
     /**
-     * <p>The MD5 hash for the request body.</p> <p>For requests made using the Amazon
-     * Web Services Command Line Interface (CLI) or Amazon Web Services SDKs, this
-     * field is calculated automatically.</p>
+     * <p>The MD5 hash for the request body.</p>
      */
     inline PutObjectLockConfigurationRequest& WithContentMD5(const char* value) { SetContentMD5(value); return *this;}
-
-
-    /**
-     * <p>The account ID of the expected bucket owner. If the bucket is owned by a
-     * different account, the request will fail with an HTTP <code>403 (Access
-     * Denied)</code> error.</p>
-     */
-    inline const Aws::String& GetExpectedBucketOwner() const{ return m_expectedBucketOwner; }
-
-    /**
-     * <p>The account ID of the expected bucket owner. If the bucket is owned by a
-     * different account, the request will fail with an HTTP <code>403 (Access
-     * Denied)</code> error.</p>
-     */
-    inline bool ExpectedBucketOwnerHasBeenSet() const { return m_expectedBucketOwnerHasBeenSet; }
-
-    /**
-     * <p>The account ID of the expected bucket owner. If the bucket is owned by a
-     * different account, the request will fail with an HTTP <code>403 (Access
-     * Denied)</code> error.</p>
-     */
-    inline void SetExpectedBucketOwner(const Aws::String& value) { m_expectedBucketOwnerHasBeenSet = true; m_expectedBucketOwner = value; }
-
-    /**
-     * <p>The account ID of the expected bucket owner. If the bucket is owned by a
-     * different account, the request will fail with an HTTP <code>403 (Access
-     * Denied)</code> error.</p>
-     */
-    inline void SetExpectedBucketOwner(Aws::String&& value) { m_expectedBucketOwnerHasBeenSet = true; m_expectedBucketOwner = std::move(value); }
-
-    /**
-     * <p>The account ID of the expected bucket owner. If the bucket is owned by a
-     * different account, the request will fail with an HTTP <code>403 (Access
-     * Denied)</code> error.</p>
-     */
-    inline void SetExpectedBucketOwner(const char* value) { m_expectedBucketOwnerHasBeenSet = true; m_expectedBucketOwner.assign(value); }
-
-    /**
-     * <p>The account ID of the expected bucket owner. If the bucket is owned by a
-     * different account, the request will fail with an HTTP <code>403 (Access
-     * Denied)</code> error.</p>
-     */
-    inline PutObjectLockConfigurationRequest& WithExpectedBucketOwner(const Aws::String& value) { SetExpectedBucketOwner(value); return *this;}
-
-    /**
-     * <p>The account ID of the expected bucket owner. If the bucket is owned by a
-     * different account, the request will fail with an HTTP <code>403 (Access
-     * Denied)</code> error.</p>
-     */
-    inline PutObjectLockConfigurationRequest& WithExpectedBucketOwner(Aws::String&& value) { SetExpectedBucketOwner(std::move(value)); return *this;}
-
-    /**
-     * <p>The account ID of the expected bucket owner. If the bucket is owned by a
-     * different account, the request will fail with an HTTP <code>403 (Access
-     * Denied)</code> error.</p>
-     */
-    inline PutObjectLockConfigurationRequest& WithExpectedBucketOwner(const char* value) { SetExpectedBucketOwner(value); return *this;}
 
 
     
@@ -352,9 +297,6 @@ namespace Model
 
     Aws::String m_contentMD5;
     bool m_contentMD5HasBeenSet;
-
-    Aws::String m_expectedBucketOwner;
-    bool m_expectedBucketOwnerHasBeenSet;
 
     Aws::Map<Aws::String, Aws::String> m_customizedAccessLogTag;
     bool m_customizedAccessLogTagHasBeenSet;

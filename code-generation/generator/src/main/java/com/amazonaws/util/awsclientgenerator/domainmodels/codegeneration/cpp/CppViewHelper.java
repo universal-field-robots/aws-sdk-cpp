@@ -1,16 +1,24 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 package com.amazonaws.util.awsclientgenerator.domainmodels.codegeneration.cpp;
 
 import com.amazonaws.util.awsclientgenerator.domainmodels.codegeneration.Metadata;
 import com.amazonaws.util.awsclientgenerator.domainmodels.codegeneration.Shape;
 import com.amazonaws.util.awsclientgenerator.domainmodels.codegeneration.ShapeMember;
-import com.amazonaws.util.awsclientgenerator.transform.CoreErrors;
 import com.google.common.base.CaseFormat;
-import java.lang.RuntimeException;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -21,45 +29,44 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CppViewHelper {
-    private static final Map<String, String> CORAL_TYPE_TO_CPP_TYPE_MAPPING = new HashMap<>();
-    private static final Map<String, String> CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING = new HashMap<>();
-    private static final Map<String, String> CORAL_TYPE_TO_XML_CONVERSION_MAPPING = new HashMap<>();
+    private static final Map<String, String> CORAL_TO_CPP_TYPE_MAPPING = new HashMap<>();
+    private static final Map<String, String> CORAL_TO_JSON_CPP_TYPE_MAPPING = new HashMap<>();
+    private static final Map<String, String> CORAL_TO_XML_CONVERSION_MAPPING = new HashMap<>();
     private static final Map<String, String> CORAL_TYPE_TO_DEFAULT_VALUES = new HashMap<>();
-    private static final Map<String, String> CORAL_PROTOCOL_TO_CONTENT_TYPE_MAPPING = new HashMap<>();
-    private static final Map<String, String> CORAL_PROTOCOL_TO_PAYLOAD_TYPE_MAPPING = new HashMap<>();
-    private static final Map<String, String> C2J_TIMESTAMP_FORMAT_TO_CPP_DATE_TIME_FORMAT = new HashMap<>();
+    private static final Map<String, String> CORAL_TO_CONTENT_TYPE_MAPPING = new HashMap<>();
 
     static {
-        CORAL_TYPE_TO_CPP_TYPE_MAPPING.put("long", "long long");
-        CORAL_TYPE_TO_CPP_TYPE_MAPPING.put("integer", "int");
-        CORAL_TYPE_TO_CPP_TYPE_MAPPING.put("string", "Aws::String");
-        CORAL_TYPE_TO_CPP_TYPE_MAPPING.put("timestamp", "Aws::Utils::DateTime");
-        CORAL_TYPE_TO_CPP_TYPE_MAPPING.put("boolean", "bool");
-        CORAL_TYPE_TO_CPP_TYPE_MAPPING.put("double", "double");
-        CORAL_TYPE_TO_CPP_TYPE_MAPPING.put("float", "double");
-        CORAL_TYPE_TO_CPP_TYPE_MAPPING.put("blob", "Aws::Utils::ByteBuffer");
-        CORAL_TYPE_TO_CPP_TYPE_MAPPING.put("sensitive_blob", "Aws::Utils::CryptoBuffer");
+        CORAL_TO_CPP_TYPE_MAPPING.put("long", "long long");
+        CORAL_TO_CPP_TYPE_MAPPING.put("integer", "int");
+        CORAL_TO_CPP_TYPE_MAPPING.put("string", "Aws::String");
+        CORAL_TO_CPP_TYPE_MAPPING.put("timestamp", "Aws::Utils::DateTime");
+        CORAL_TO_CPP_TYPE_MAPPING.put("boolean", "bool");
+        CORAL_TO_CPP_TYPE_MAPPING.put("double", "double");
+        CORAL_TO_CPP_TYPE_MAPPING.put("float", "double");
+        CORAL_TO_CPP_TYPE_MAPPING.put("blob", "Aws::Utils::ByteBuffer");
+        CORAL_TO_CPP_TYPE_MAPPING.put("sensitive_blob", "Aws::Utils::CryptoBuffer");
 
-        CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.put("long", "Int64");
-        CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.put("integer", "Integer");
-        CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.put("string", "String");
-        CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.put("boolean", "Bool");
-        CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.put("double", "Double");
-        CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.put("map", "Object");
-        CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.put("list", "Array");
-        CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.put("structure", "Object");
-        CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.put("blob", "String");
-        CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.put("float", "Double");
-        CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.put("timestamp", "Double");
-        CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.put("unixtimestamp", "Double");
-        CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.put("rfc822", "String");
-        CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.put("iso8601", "String");
+        CORAL_TO_JSON_CPP_TYPE_MAPPING.put("long", "Int64");
+        CORAL_TO_JSON_CPP_TYPE_MAPPING.put("integer", "Integer");
+        CORAL_TO_JSON_CPP_TYPE_MAPPING.put("string", "String");
+        CORAL_TO_JSON_CPP_TYPE_MAPPING.put("boolean", "Bool");
+        CORAL_TO_JSON_CPP_TYPE_MAPPING.put("double", "Double");
+        CORAL_TO_JSON_CPP_TYPE_MAPPING.put("map", "Object");
+        CORAL_TO_JSON_CPP_TYPE_MAPPING.put("list", "Array");
+        CORAL_TO_JSON_CPP_TYPE_MAPPING.put("structure", "Object");
+        CORAL_TO_JSON_CPP_TYPE_MAPPING.put("blob", "String");
+        CORAL_TO_JSON_CPP_TYPE_MAPPING.put("float", "Double");
+        CORAL_TO_JSON_CPP_TYPE_MAPPING.put("timestamp", "Double");
+        CORAL_TO_JSON_CPP_TYPE_MAPPING.put("unixtimestamp", "Double");
+        CORAL_TO_JSON_CPP_TYPE_MAPPING.put("rfc822", "String");
+        CORAL_TO_JSON_CPP_TYPE_MAPPING.put("iso8601", "String");
 
-        CORAL_TYPE_TO_XML_CONVERSION_MAPPING.put("long", "StringUtils::ConvertToInt64");
-        CORAL_TYPE_TO_XML_CONVERSION_MAPPING.put("integer", "StringUtils::ConvertToInt32");
-        CORAL_TYPE_TO_XML_CONVERSION_MAPPING.put("boolean", "StringUtils::ConvertToBool");
-        CORAL_TYPE_TO_XML_CONVERSION_MAPPING.put("double", "StringUtils::ConvertToDouble");
-        CORAL_TYPE_TO_XML_CONVERSION_MAPPING.put("float", "StringUtils::ConvertToDouble");
+        CORAL_TO_XML_CONVERSION_MAPPING.put("long", "StringUtils::ConvertToInt64");
+        CORAL_TO_XML_CONVERSION_MAPPING.put("integer", "StringUtils::ConvertToInt32");
+        CORAL_TO_XML_CONVERSION_MAPPING.put("boolean", "StringUtils::ConvertToBool");
+        CORAL_TO_XML_CONVERSION_MAPPING.put("double", "StringUtils::ConvertToDouble");
+        CORAL_TO_XML_CONVERSION_MAPPING.put("float", "StringUtils::ConvertToDouble");
+
 
         CORAL_TYPE_TO_DEFAULT_VALUES.put("long", "0");
         CORAL_TYPE_TO_DEFAULT_VALUES.put("integer", "0");
@@ -67,27 +74,16 @@ public class CppViewHelper {
         CORAL_TYPE_TO_DEFAULT_VALUES.put("double", "0.0");
         CORAL_TYPE_TO_DEFAULT_VALUES.put("float", "0.0");
 
-        CORAL_PROTOCOL_TO_CONTENT_TYPE_MAPPING.put("json", "Aws::AMZN_JSON_CONTENT_TYPE_1_1");
-        CORAL_PROTOCOL_TO_CONTENT_TYPE_MAPPING.put("json1.0", "Aws::AMZN_JSON_CONTENT_TYPE_1_0");
-        CORAL_PROTOCOL_TO_CONTENT_TYPE_MAPPING.put("json1.1", "Aws::AMZN_JSON_CONTENT_TYPE_1_1");
-        CORAL_PROTOCOL_TO_CONTENT_TYPE_MAPPING.put("rest-json", "Aws::JSON_CONTENT_TYPE");
-        CORAL_PROTOCOL_TO_CONTENT_TYPE_MAPPING.put("rest-json1.0", "Aws::JSON_CONTENT_TYPE");
-        CORAL_PROTOCOL_TO_CONTENT_TYPE_MAPPING.put("rest-json1.1", "Aws::JSON_CONTENT_TYPE");
-        CORAL_PROTOCOL_TO_CONTENT_TYPE_MAPPING.put("rest-xml", "Aws::AMZN_XML_CONTENT_TYPE");
-        CORAL_PROTOCOL_TO_CONTENT_TYPE_MAPPING.put("query", "Aws::FORM_CONTENT_TYPE");
-        CORAL_PROTOCOL_TO_CONTENT_TYPE_MAPPING.put("ec2", "Aws::FORM_CONTENT_TYPE");
-        CORAL_PROTOCOL_TO_CONTENT_TYPE_MAPPING.put("application-json", "Aws::JSON_CONTENT_TYPE");
-
-        CORAL_PROTOCOL_TO_PAYLOAD_TYPE_MAPPING.put("json", "json");
-        CORAL_PROTOCOL_TO_PAYLOAD_TYPE_MAPPING.put("rest-json", "json");
-        CORAL_PROTOCOL_TO_PAYLOAD_TYPE_MAPPING.put("rest-xml", "xml");
-        CORAL_PROTOCOL_TO_PAYLOAD_TYPE_MAPPING.put("query", "xml");
-        CORAL_PROTOCOL_TO_PAYLOAD_TYPE_MAPPING.put("ec2", "xml");
-        CORAL_PROTOCOL_TO_PAYLOAD_TYPE_MAPPING.put("application-json", "json");
-        CORAL_PROTOCOL_TO_PAYLOAD_TYPE_MAPPING.put("api-gateway", "json");
-
-        C2J_TIMESTAMP_FORMAT_TO_CPP_DATE_TIME_FORMAT.put("rfc822", "RFC822");
-        C2J_TIMESTAMP_FORMAT_TO_CPP_DATE_TIME_FORMAT.put("iso8601", "ISO_8601");
+        CORAL_TO_CONTENT_TYPE_MAPPING.put("json", "Aws::AMZN_JSON_CONTENT_TYPE_1_1");
+        CORAL_TO_CONTENT_TYPE_MAPPING.put("json1.0", "Aws::AMZN_JSON_CONTENT_TYPE_1_0");
+        CORAL_TO_CONTENT_TYPE_MAPPING.put("json1.1", "Aws::AMZN_JSON_CONTENT_TYPE_1_1");
+        CORAL_TO_CONTENT_TYPE_MAPPING.put("rest-json", "Aws::AMZN_JSON_CONTENT_TYPE_1_1");
+        CORAL_TO_CONTENT_TYPE_MAPPING.put("rest-json1.0", "Aws::AMZN_JSON_CONTENT_TYPE_1_0");
+        CORAL_TO_CONTENT_TYPE_MAPPING.put("rest-json1.1", "Aws::AMZN_JSON_CONTENT_TYPE_1_1");
+        CORAL_TO_CONTENT_TYPE_MAPPING.put("rest-xml", "Aws::AMZN_XML_CONTENT_TYPE");
+        CORAL_TO_CONTENT_TYPE_MAPPING.put("query", "Aws::FORM_CONTENT_TYPE");
+        CORAL_TO_CONTENT_TYPE_MAPPING.put("ec2", "Aws::FORM_CONTENT_TYPE");
+        CORAL_TO_CONTENT_TYPE_MAPPING.put("application-json", "Aws::JSON_CONTENT_TYPE");
     }
 
     public static String computeExportValue(String classNamePrefix) {
@@ -120,46 +116,37 @@ public class CppViewHelper {
         return String.format("%sHasBeenSet", computeMemberVariableName(memberName));
     }
 
-    public static String computeJsonizeString(Shape shape, boolean isPointer) {
-        String memberAccessOp = isPointer ? "->" : ".";
+    public static String computeJsonizeString(Shape shape) {
+        String jsonizeString = ".Jsonize()";
 
         if(shape.isStructure()) {
-            return memberAccessOp + "Jsonize()";
+            return jsonizeString;
         }
 
         if(shape.isTimeStamp()) {
-            if(shape.getTimestampFormat() == null || CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.get(shape.getTimestampFormat().toLowerCase()).equalsIgnoreCase("Double")) {
-                return memberAccessOp + "SecondsWithMSPrecision()";
+            if(shape.getTimestampFormat() == null || CORAL_TO_JSON_CPP_TYPE_MAPPING.get(shape.getTimestampFormat().toLowerCase()).equalsIgnoreCase("Double")) {
+                return ".SecondsWithMSPrecision()";
             }
 
             if(shape.getTimestampFormat().toLowerCase().equalsIgnoreCase("rfc822")) {
-                return memberAccessOp + "ToGmtString(DateFormat::RFC822)";
+                return ".ToGmtString(DateFormat::RFC822)";
             }
 
             if(shape.getTimestampFormat().toLowerCase().equalsIgnoreCase("iso8601")) {
-                return memberAccessOp + "ToGmtString(DateFormat::ISO_8601)";
+                return ".ToGmtString(DateFormat::ISO_8601)";
             }
         }
 
         return "";
     }
 
-    public static String computeJsonizeString(Shape shape) {
-        return computeJsonizeString(shape, false);
-    }
-
     public static String computeCppType(Shape shape) {
         String sensitivePrefix = shape.isSensitive() ? "sensitive_" : "";
-        String cppType =  CORAL_TYPE_TO_CPP_TYPE_MAPPING.get(sensitivePrefix + shape.getType());
+        String cppType =  CORAL_TO_CPP_TYPE_MAPPING.get(sensitivePrefix + shape.getType());
 
         //enum types show up as string
         if(cppType != null && !shape.isEnum()) {
             return cppType;
-        }
-
-        else if(shape.isDocument())
-        {
-            return "Aws::Utils::Document";
         }
 
         else if(shape.isStructure() || shape.isEnum())
@@ -185,13 +172,13 @@ public class CppViewHelper {
 
     public static String computeJsonCppType(Shape shape) {
         if(shape.isTimeStamp() && shape.getTimestampFormat() != null) {
-            return CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.get(shape.getTimestampFormat().toLowerCase());
+            return CORAL_TO_JSON_CPP_TYPE_MAPPING.get(shape.getTimestampFormat().toLowerCase());
         }
-        return CORAL_TYPE_TO_JSON_CPP_TYPE_MAPPING.get(shape.getType());
+        return CORAL_TO_JSON_CPP_TYPE_MAPPING.get(shape.getType());
     }
 
     public static String computeXmlConversionMethodName(Shape shape) {
-        return CORAL_TYPE_TO_XML_CONVERSION_MAPPING.get(shape.getType());
+        return CORAL_TO_XML_CONVERSION_MAPPING.get(shape.getType());
     }
 
     public static String computeRequestContentType(Metadata metadata) {
@@ -201,39 +188,7 @@ public class CppViewHelper {
             protocolAndVersion += metadata.getJsonVersion();
         }
 
-        // Customization for request content-type
-        if (metadata.getServiceId().equals("WellArchitected")) {
-            return "Aws::JSON_CONTENT_TYPE";
-        } else if (metadata.getServiceId().equals("savingsplans")) {
-            return "Aws::JSON_CONTENT_TYPE";
-        } else {
-            return CORAL_PROTOCOL_TO_CONTENT_TYPE_MAPPING.get(protocolAndVersion);
-        }
-    }
-
-    public static String computeServicePayloadType(String protocol) {
-        return CORAL_PROTOCOL_TO_PAYLOAD_TYPE_MAPPING.get(protocol);
-    }
-
-    public static String computeTimestampFormatInHeader(Shape shape) {
-        if (shape.getTimestampFormat() != null) {
-            return C2J_TIMESTAMP_FORMAT_TO_CPP_DATE_TIME_FORMAT.get(shape.getTimestampFormat().toLowerCase());
-        }
-        return C2J_TIMESTAMP_FORMAT_TO_CPP_DATE_TIME_FORMAT.get("rfc822");
-    }
-
-    public static String computeTimestampFormatInQueryString(Shape shape) {
-        if (shape.getTimestampFormat() != null) {
-            return C2J_TIMESTAMP_FORMAT_TO_CPP_DATE_TIME_FORMAT.get(shape.getTimestampFormat().toLowerCase());
-        }
-        return C2J_TIMESTAMP_FORMAT_TO_CPP_DATE_TIME_FORMAT.get("iso8601");
-    }
-
-    public static String computeTimestampFormatInXml(Shape shape) {
-        if (shape.getTimestampFormat() != null) {
-            return C2J_TIMESTAMP_FORMAT_TO_CPP_DATE_TIME_FORMAT.get(shape.getTimestampFormat().toLowerCase());
-        }
-        return C2J_TIMESTAMP_FORMAT_TO_CPP_DATE_TIME_FORMAT.get("iso8601");
+        return CORAL_TO_CONTENT_TYPE_MAPPING.get(protocolAndVersion);
     }
 
     public static Set<String> computeHeaderIncludes(String projectName, Shape shape) {
@@ -241,7 +196,6 @@ public class CppViewHelper {
         Set<String> visited = new LinkedHashSet<>();
         Queue<Shape> toVisit = shape.getMembers().values().stream().map(ShapeMember::getShape).collect(Collectors.toCollection(() -> new LinkedList<>()));
         boolean includeUtilityHeader = false;
-        boolean includeMemoryHeader = false;
 
         while(!toVisit.isEmpty()) {
             Shape next = toVisit.remove();
@@ -262,21 +216,13 @@ public class CppViewHelper {
                 }
             }
             if(!next.isPrimitive()) {
-                if(next.isMutuallyReferencedWith(shape) || shape.isListMemberAndMutuallyReferencedWith(next)) {
-                    includeMemoryHeader = true;
-                }
-                else {
-                    headers.add(formatModelIncludeName(projectName, next));
-                }
+                headers.add(formatModelIncludeName(projectName, next));
                 includeUtilityHeader = true;
             }
         }
 
         if(includeUtilityHeader) {
             headers.add("<utility>");
-        }
-        if(includeMemoryHeader) {
-            headers.add("<memory>");
         }
 
         headers.addAll(shape.getMembers().values().stream().filter(member -> member.isIdempotencyToken()).map(member -> "<aws/core/utils/UUID.h>").collect(Collectors.toList()));
@@ -290,9 +236,6 @@ public class CppViewHelper {
         }
         else if(shape.isList()) {
             return "<aws/core/utils/memory/stl/AWSVector.h>";
-        }
-        else if(shape.isDocument()) {
-            return "<aws/core/utils/Document.h>";
         }
         else if(shape.isEnum() || shape.isStructure()) {
             return String.format("<aws/%s/model/%s.h>", projectName, shape.getName());
@@ -311,33 +254,8 @@ public class CppViewHelper {
         }
     }
 
-    public static Set<String> computeSourceIncludes(String projectName, Shape shape) {
+    public static Set<String> computeSourceIncludes(Shape shape) {
         Set<String> headers = new LinkedHashSet<>();
-        Set<String> visited = new LinkedHashSet<>();
-        Queue<Shape> toVisit = shape.getMembers().values().stream().map(ShapeMember::getShape).collect(Collectors.toCollection(() -> new LinkedList<>()));
-
-        while(!toVisit.isEmpty()) {
-            Shape next = toVisit.remove();
-            visited.add(next.getName());
-            if(next.isMap()) {
-                if(!visited.contains(next.getMapKey().getShape().getName())) {
-                    toVisit.add(next.getMapKey().getShape());
-                }
-                if(!visited.contains(next.getMapValue().getShape().getName())) {
-                    toVisit.add(next.getMapValue().getShape());
-                }
-            }
-            if(next.isList())
-            {
-                if(!visited.contains(next.getListMember().getShape().getName()))
-                {
-                    toVisit.add(next.getListMember().getShape());
-                }
-            }
-            if(!next.isPrimitive() && (next.isMutuallyReferencedWith(shape) || shape.isListMemberAndMutuallyReferencedWith(next))) {
-                headers.add(formatModelIncludeName(projectName, next));
-            }
-        }
 
         for(Map.Entry<String, ShapeMember> entry : shape.getMembers().entrySet()) {
             Shape innerShape = entry.getValue().getShape();
@@ -369,10 +287,6 @@ public class CppViewHelper {
         }
 
         return shapeName.substring(0, suffixIndex);
-    }
-
-    public static String computeCoreErrorConstName(String errorName) {
-        return CoreErrors.VARIANTS.get(errorName);
     }
 
     public static String capitalizeFirstChar(final String str) {

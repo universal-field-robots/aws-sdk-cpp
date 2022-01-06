@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 #include <aws/core/client/AWSError.h>
 #include <aws/core/client/CoreErrors.h>
@@ -31,7 +41,7 @@ void CoreErrorsMapper::InitCoreErrorsMapper()
       return;
     }
     s_CoreErrorsMapper = Aws::MakeUnique<Aws::Map<Aws::String, AWSError<CoreErrors> > >("InitCoreErrorsMapper");
-
+    
     s_CoreErrorsMapper->emplace("IncompleteSignature", AWSError<CoreErrors>(CoreErrors::INCOMPLETE_SIGNATURE, false));
     s_CoreErrorsMapper->emplace("IncompleteSignatureException", AWSError<CoreErrors>(CoreErrors::INCOMPLETE_SIGNATURE, false));
     s_CoreErrorsMapper->emplace("InvalidSignatureException", AWSError<CoreErrors>(CoreErrors::INVALID_SIGNATURE, false));
@@ -112,40 +122,30 @@ AWS_CORE_API AWSError<CoreErrors> CoreErrorsMapper::GetErrorForHttpResponseCode(
 {
     // best effort attempt to map HTTP response codes to CoreErrors
     bool retryable = IsRetryableHttpResponseCode(code);
-    AWSError<CoreErrors> error;
-    switch (code)
+    switch(code)
     {
         case HttpResponseCode::UNAUTHORIZED:
         case HttpResponseCode::FORBIDDEN:
-            error =  AWSError<CoreErrors>(CoreErrors::ACCESS_DENIED, retryable);
-            break;
+            return AWSError<CoreErrors>(CoreErrors::ACCESS_DENIED, retryable);
         case HttpResponseCode::NOT_FOUND:
-            error = AWSError<CoreErrors>(CoreErrors::RESOURCE_NOT_FOUND, retryable);
-            break;
+            return AWSError<CoreErrors>(CoreErrors::RESOURCE_NOT_FOUND, retryable);
         case HttpResponseCode::TOO_MANY_REQUESTS:
-            error = AWSError<CoreErrors>(CoreErrors::SLOW_DOWN, retryable);
-            break;
+            return AWSError<CoreErrors>(CoreErrors::SLOW_DOWN, retryable);
         case HttpResponseCode::INTERNAL_SERVER_ERROR:
-            error = AWSError<CoreErrors>(CoreErrors::INTERNAL_FAILURE, retryable);
-            break;
+            return AWSError<CoreErrors>(CoreErrors::INTERNAL_FAILURE, retryable);
         case HttpResponseCode::BANDWIDTH_LIMIT_EXCEEDED:
-            error = AWSError<CoreErrors>(CoreErrors::THROTTLING, retryable);
-            break;
+            return AWSError<CoreErrors>(CoreErrors::THROTTLING, retryable);
         case HttpResponseCode::SERVICE_UNAVAILABLE:
-            error = AWSError<CoreErrors>(CoreErrors::SERVICE_UNAVAILABLE, retryable);
-            break;
+            return AWSError<CoreErrors>(CoreErrors::SERVICE_UNAVAILABLE, retryable);
         case HttpResponseCode::REQUEST_TIMEOUT:
         case HttpResponseCode::AUTHENTICATION_TIMEOUT:
         case HttpResponseCode::LOGIN_TIMEOUT:
         case HttpResponseCode::GATEWAY_TIMEOUT:
         case HttpResponseCode::NETWORK_READ_TIMEOUT:
         case HttpResponseCode::NETWORK_CONNECT_TIMEOUT:
-            error = AWSError<CoreErrors>(CoreErrors::REQUEST_TIMEOUT, retryable);
-            break;
+            return AWSError<CoreErrors>(CoreErrors::REQUEST_TIMEOUT, retryable);
         default:
             int codeValue = static_cast<int>(code);
-            error = AWSError<CoreErrors>(CoreErrors::UNKNOWN, codeValue >= 500 && codeValue < 600);
+            return AWSError<CoreErrors>(CoreErrors::UNKNOWN, codeValue >= 500 && codeValue < 600);
     }
-    error.SetResponseCode(code);
-    return error;
 }

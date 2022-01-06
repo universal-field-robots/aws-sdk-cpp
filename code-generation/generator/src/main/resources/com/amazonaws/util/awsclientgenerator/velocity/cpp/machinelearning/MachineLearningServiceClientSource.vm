@@ -36,9 +36,7 @@ ${operation.name}Outcome ${className}::${operation.name}(const ${operation.reque
 #parse("com/amazonaws/util/awsclientgenerator/velocity/cpp/ServiceClientOperationRequestRequiredMemberValidate.vm")
 #if($operation.name != "Predict")
 #parse("com/amazonaws/util/awsclientgenerator/velocity/cpp/ServiceClientOperationEndpointPrepareCommonBody.vm")
-#if($operation.http.requestUri.contains("?"))
   Aws::StringStream ss;
-#end
 #set($uriParts = $operation.http.requestUriParts)
 #set($uriVars = $operation.http.requestParameters)
 #set($partIndex = 1)
@@ -48,30 +46,20 @@ ${operation.name}Outcome ${className}::${operation.name}(const ${operation.reque
 #set($queryStart = true)
 #set($pathAndQuery = $operation.http.splitUriPartIntoPathAndQuery($uriPartString))
 #if(!$pathAndQuery.get(0).isEmpty())
-  uri.AddPathSegments("${pathAndQuery.get(0)}");
+  ss << "${pathAndQuery.get(0)}";
+  uri.SetPath(uri.GetPath() + ss.str());
 #end
   ss.str("${pathAndQuery.get(1)}");
-#elseif(!$uriPartString.equals("/"))
-  uri.AddPathSegments("$uriPartString");
+#else
+  ss << "$uriPartString";
 #end
 #foreach($var in $uriVars)
 #set($varIndex = $partIndex - 1)
-#set($uriVar = $uriVars.get($varIndex).replace('+', ''))
-#set($greedySyntax = $uriVars.get($varIndex).contains("+"))
-#set($partShapeMember = $operation.request.shape.getMemberByLocationName($uriVar))
+#set($partShapeMember = $operation.request.shape.getMemberByLocationName($uriVars.get($varIndex)))
 #if($partShapeMember.shape.enum)
-#set($parameter = "${partShapeMember.shape.name}Mapper::GetNameFor${partShapeMember.shape.name}(request.Get${CppViewHelper.convertToUpperCamel($operation.request.shape.getMemberNameByLocationName($uriVar))}())")
+  ss << ${partShapeMember.shape.name}Mapper::GetNameFor${partShapeMember.shape.name}(request.Get${CppViewHelper.convertToUpperCamel($operation.request.shape.getMemberNameByLocationName($uriVars.get($varIndex)))}());
 #else
-#set($parameter = "request.Get${CppViewHelper.convertToUpperCamel($operation.request.shape.getMemberNameByLocationName($uriVar))}()")
-#end
-#if($queryStart)
-  ss << $parameter;
-#else
-#if($greedySyntax)
-  uri.AddPathSegments($parameter);
-#else
-  uri.AddPathSegment($parameter);
-#end
+  ss << request.Get${CppViewHelper.convertToUpperCamel($operation.request.shape.getMemberNameByLocationName($uriVars.get($varIndex)))}();
 #end
 #if($uriParts.size() > $partIndex)
 #set($uriPartString = "${uriParts.get($partIndex)}")
@@ -79,22 +67,37 @@ ${operation.name}Outcome ${className}::${operation.name}(const ${operation.reque
 #set($queryStart = true)
 #set($pathAndQuery = $operation.http.splitUriPartIntoPathAndQuery($uriPartString))
 #if(!$pathAndQuery.get(0).isEmpty())
-  uri.AddPathSegments("${pathAndQuery.get(0)}");
+  ss << "${pathAndQuery.get(0)}";
 #end
+  uri.SetPath(uri.GetPath() + ss.str());
   ss.str("${pathAndQuery.get(1)}");
-#elseif(!$uriPartString.equals("/"))
-  uri.AddPathSegments("$uriPartString");
+#else
+  ss << "$uriPartString";
 #end
 #end
 #set($partIndex = $partIndex + 1)
 #end
-#if($queryStart)
+#if(!$queryStart)
+  uri.SetPath(uri.GetPath() + ss.str());
+#else
   uri.SetQueryString(ss.str());
 #end
-  return ${operation.name}Outcome(MakeRequest(uri, request, Aws::Http::HttpMethod::HTTP_${operation.http.method}));
+  JsonOutcome outcome = MakeRequest(uri, request, Aws::Http::HttpMethod::HTTP_${operation.http.method});
 #else
-  return ${operation.name}Outcome(MakeRequest(request.GetPredictEndpoint(), request, Aws::Http::HttpMethod::HTTP_${operation.http.method}));
+  JsonOutcome outcome = MakeRequest(request.GetPredictEndpoint(), request, Aws::Http::HttpMethod::HTTP_${operation.http.method});
 #end
+  if(outcome.IsSuccess())
+  {
+#if(${operation.result})
+    return ${operation.name}Outcome(${operation.result.shape.name}(outcome.GetResult()));
+#else
+    return ${operation.name}Outcome(NoResult());
+#end
+  }
+  else
+  {
+    return ${operation.name}Outcome(outcome.GetError());
+  }
 }
 
 ${operation.name}OutcomeCallable ${className}::${operation.name}Callable(const ${operation.request.shape.name}& request) const

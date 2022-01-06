@@ -1,5 +1,18 @@
-﻿# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-# SPDX-License-Identifier: Apache-2.0.
+﻿#!/usr/bin/env python
+
+#
+# Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License").
+# You may not use this file except in compliance with the License.
+# A copy of the License is located at
+#
+#  http://aws.amazon.com/apache2.0
+#
+# or in the "license" file accompanying this file. This file is distributed
+# on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+# express or implied. See the License for the specific language governing
+# permissions and limitations under the License.
 #
 import argparse
 import shutil
@@ -28,7 +41,6 @@ def ParseArguments():
     parser.add_argument("--prepareTools", help="Makes sure generation environment is setup.", action="store_true")
     parser.add_argument("--standalone", help="Build custom client as a separete package, with prebuilt C++ SDK as dependency", action="store_true")
     parser.add_argument("--listAll", help="Lists all available SDKs for generation.", action="store_true")
-    parser.add_argument("--enableVirtualOperations", help ="Mark operation functions in service client as virtual functions.", action="store_true")
 
     args = vars( parser.parse_args() )
     argMap[ "outputLocation" ] = args[ "outputLocation" ] or "./"
@@ -41,19 +53,14 @@ def ParseArguments():
     argMap[ "prepareTools" ] = args["prepareTools"]
     argMap[ "standalone" ] = args["standalone"]
     argMap[ "listAll" ] = args["listAll"]
-    argMap[ "enableVirtualOperations" ] = args["enableVirtualOperations"]
 
     return argMap
 
 serviceNameRemaps = {
     "runtime.lex" : "lex",
-    "runtime.lex.v2" : "lexv2-runtime",
-    "models.lex.v2" : "lexv2-models",
     "entitlement.marketplace" : "marketplace-entitlement",
     "runtime.sagemaker" : "sagemaker-runtime",
-    "transfer" : "awstransfer",
-    "transcribe-streaming" : "transcribestreaming",
-    "streams.dynamodb" : "dynamodbstreams"
+    "transfer" : "awstransfer"
 }
 
 def DiscoverAllAvailableSDKs(discoveryPath):
@@ -74,13 +81,6 @@ def DiscoverAllAvailableSDKs(discoveryPath):
             sdk['filePath'] = join(discoveryPath, file)
             sdks['{}-{}'.format(sdk['serviceName'], sdk['apiVersion'])] = sdk
 
-            if serviceName == "s3":
-                s3crt = {}
-                s3crt['serviceName'] = "s3-crt"
-                s3crt['apiVersion'] = sdk['apiVersion']
-                s3crt['filePath'] = sdk['filePath']
-                sdks['s3-crt-{}'.format(s3crt['apiVersion'])] = s3crt
-
     return sdks
 
 def PrepareGenerator(generatorPath):
@@ -89,12 +89,12 @@ def PrepareGenerator(generatorPath):
     process = subprocess.call('mvn package', shell=True)
     os.chdir(currentDir)
 
-def GenerateSdk(generatorPath, sdk, outputDir, namespace, licenseText, standalone, enableVirtualOperations):
+def GenerateSdk(generatorPath, sdk, outputDir, namespace, licenseText, standalone):
     try:
        with codecs.open(sdk['filePath'], 'rb', 'utf-8') as api_definition:
             api_content = api_definition.read()
             jar_path = join(generatorPath, 'target/aws-client-generator-1.0-SNAPSHOT-jar-with-dependencies.jar')
-            process = Popen(['java', '-jar', jar_path, '--service', sdk['serviceName'], '--version', sdk['apiVersion'], '--namespace', namespace, '--license-text', licenseText, '--language-binding', 'cpp', '--arbitrary', '--standalone' if standalone else '', '--enable-virtual-operations' if enableVirtualOperations else '' ], stdout=PIPE, stdin=PIPE)
+            process = Popen(['java', '-jar', jar_path, '--service', sdk['serviceName'], '--version', sdk['apiVersion'], '--namespace', namespace, '--license-text', licenseText, '--language-binding', 'cpp', '--arbitrary', '--standalone' if standalone else ''], stdout=PIPE, stdin=PIPE)
             writer = codecs.getwriter('utf-8')
             stdInWriter = writer(process.stdin)
             stdInWriter.write(api_content)
@@ -121,6 +121,6 @@ def Main():
     if arguments['serviceName']:
         print('Generating {} api version {}.'.format(arguments['serviceName'], arguments['apiVersion']))
         key = '{}-{}'.format(arguments['serviceName'], arguments['apiVersion'])
-        GenerateSdk(arguments['pathToGenerator'], sdks[key], arguments['outputLocation'], arguments['namespace'], arguments['licenseText'], arguments['standalone'], arguments['enableVirtualOperations'])
+        GenerateSdk(arguments['pathToGenerator'], sdks[key], arguments['outputLocation'], arguments['namespace'], arguments['licenseText'], arguments['standalone'])
 
 Main()

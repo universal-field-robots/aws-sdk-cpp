@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 #pragma once
 
 #include <aws/core/utils/crypto/Hash.h>
@@ -37,7 +47,7 @@ namespace Aws
 
             /**
              * OpenSSL implementation for SecureRandomBytes.
-             * Incidentally, this implementation is thread safe, though it is not
+             * Incidently, this implementation is thread safe, though it is not
              * on other platforms. You should treat an instance of SecureRandomBytes
              * as needed to be memory fenced if you will be using accross multiple threads
              */
@@ -68,18 +78,6 @@ namespace Aws
 
                 virtual HashResult Calculate(Aws::IStream& stream) override;
 
-            };
-
-            class Sha1OpenSSLImpl : public Hash
-            {
-            public:
-
-                Sha1OpenSSLImpl() {}
-                virtual ~Sha1OpenSSLImpl() = default;
-
-                virtual HashResult Calculate(const Aws::String& str) override;
-
-                virtual HashResult Calculate(Aws::IStream& stream) override;
             };
 
             class Sha256OpenSSLImpl : public Hash
@@ -163,7 +161,7 @@ namespace Aws
 
                 /**
                 * Decrypt a buffer of data. Part of the contract for this interface is that intention that
-                * a user call this function multiple times for a large stream. As such, multiple calls to this function
+                * a user call this function multiple times for a large stream. As such, mutliple calls to this function
                 * on the same instance should produce valid sequential output from an encrypted stream.
                 */
                 CryptoBuffer DecryptBuffer(const CryptoBuffer& encryptedData) override;
@@ -177,17 +175,15 @@ namespace Aws
 
             protected:
                 virtual size_t GetBlockSizeBytes() const = 0;
+
                 virtual size_t GetKeyLengthBits() const = 0;
-                bool CheckKeyAndIVLength(size_t expectedKeyLength, size_t expectedIVLength);
 
                 EVP_CIPHER_CTX* m_encryptor_ctx;
                 EVP_CIPHER_CTX* m_decryptor_ctx;
+
             private:
                 void Init();
                 void Cleanup();
-
-                /* openssl has bug finalize decryption of an empty string */
-                bool m_emptyPlaintext;
             };
 
             /**
@@ -280,30 +276,23 @@ namespace Aws
             {
             public:
                 /**
-                 * Create AES in GCM mode off of a 256 bit key. Auto Generates a 12 byte secure random IV.
+                 * Create AES in GCM mode off of a 256 bit key. Auto Generates a 16 byte secure random IV.
                  */
                 AES_GCM_Cipher_OpenSSL(const CryptoBuffer& key);
 
                 /**
-                * Create AES in GCM mode off of a 256 bit key and AAD. Auto Generates a 12 byte IV in the format
-                */
-                AES_GCM_Cipher_OpenSSL(const CryptoBuffer& key, const CryptoBuffer* aad);
-
-                /**
-                 * Create AES in GCM mode off of a 256 bit key, a 12 byte secure random IV, and an optional 16 byte Tag and additional authentication data (AAD).
-                 * Note that tag could be acquired from encrypt mode and should only be set for decrypt mode.
-                 * If you are using this cipher to decrypt an encrypted payload, you must set the tag here.
+                 * Create AES in GCM mode off of a 256 bit key, a 16 byte secure random IV, and an optional 16 byte Tag. If you are using this
+                 * cipher to decrypt an encrypted payload, you must set the tag here.
                  */
                 AES_GCM_Cipher_OpenSSL(CryptoBuffer&& key, CryptoBuffer&& initializationVector,
-                                       CryptoBuffer&& tag = CryptoBuffer(0), CryptoBuffer&& aad = CryptoBuffer(0));
+                                       CryptoBuffer&& tag = CryptoBuffer(0));
 
                 /**
-                 * Create AES in GCM mode off of a 256 bit key, a 12 byte secure random IV, and an optional 16 byte Tag and additional authentication data (AAD).
-                 * Note that tag could be acquired from encrypt mode and should only be set for decrypt mode.
-                 * If you are using this cipher to decrypt an encrypted payload, you must set the tag here.
+                 * Create AES in GCM mode off of a 256 bit key, a 16 byte secure random IV, and an optional 16 byte Tag. If you are using this
+                 * cipher to decrypt an encrypted payload, you must set the tag here.
                  */
                 AES_GCM_Cipher_OpenSSL(const CryptoBuffer& key, const CryptoBuffer& initializationVector,
-                                       const CryptoBuffer& tag = CryptoBuffer(0), const CryptoBuffer& aad = CryptoBuffer(0));
+                                       const CryptoBuffer& tag = CryptoBuffer(0));
 
                 AES_GCM_Cipher_OpenSSL(const AES_GCM_Cipher_OpenSSL& other) = delete;
 
@@ -330,7 +319,6 @@ namespace Aws
             private:
                 void InitCipher();
 
-                CryptoBuffer m_aad;
                 static size_t BlockSizeBytes;
                 static size_t IVLengthBytes;
                 static size_t KeyLengthBits;

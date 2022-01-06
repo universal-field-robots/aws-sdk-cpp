@@ -1,6 +1,16 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+/*
+ * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ *  http://aws.amazon.com/apache2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
  */
 
 #pragma once
@@ -106,58 +116,31 @@ namespace Aws
             virtual ~AWSClient() { };
 
             /**
-             * Generates a signed Uri using the injected signer. for the supplied uri and http method. expirationInSeconds defaults
+             * Generates a signed Uri using the injected signer. for the supplied uri and http method. expirationInSecodns defaults
              * to 0 which is the default 7 days. The implication of this function is using auth signer v4 to sign it.
              */
             Aws::String GeneratePresignedUrl(Aws::Http::URI& uri, Aws::Http::HttpMethod method, long long expirationInSeconds = 0);
 
             /**
-             * Generates a signed Uri using the injected signer. for the supplied uri, http method and customized headers. expirationInSeconds defaults
+             * Generates a signed Uri using the injected signer. for the supplied uri, http method and customized headers. expirationInSecodns defaults
              * to 0 which is the default 7 days. The implication of this function is using auth signer v4 to sign it.
              */
             Aws::String GeneratePresignedUrl(Aws::Http::URI& uri, Aws::Http::HttpMethod method, const Aws::Http::HeaderValueCollection& customizedHeaders, long long expirationInSeconds = 0);
 
             /**
-             * Generates a signed Uri using the injected signer. for the supplied uri and http method and region. expirationInSeconds defaults
-             * to 0 which is the default 7 days.
-             */
+            * Generates a signed Uri using the injected signer. for the supplied uri and http method and region. expirationInSeconds defaults
+            * to 0 which is the default 7 days.
+            */
             Aws::String GeneratePresignedUrl(Aws::Http::URI& uri, Aws::Http::HttpMethod method, const char* region, long long expirationInSeconds = 0) const;
 
             /**
-             * Generates a signed Uri using the injected signer. for the supplied uri, http method and customized headers. expirationInSeconds defaults
-             * to 0 which is the default 7 days.
-             */
-            Aws::String GeneratePresignedUrl(Aws::Http::URI& uri, Aws::Http::HttpMethod method, const char* region, const Aws::Http::HeaderValueCollection& customizedHeaders, long long expirationInSeconds = 0);
-
-            /**
-             * Generates a signed Uri using the injected signer. for the supplied uri and http method, region, and service name. expirationInSeconds defaults
-             * to 0 which is the default 7 days.
-             */
+            * Generates a signed Uri using the injected signer. for the supplied uri and http method, region, and service name. expirationInSeconds defaults
+            * to 0 which is the default 7 days.
+            */
             Aws::String GeneratePresignedUrl(Aws::Http::URI& uri, Aws::Http::HttpMethod method, const char* region, const char* serviceName, long long expirationInSeconds = 0) const;
 
-            /**
-             * Generates a signed Uri using the injected signer. for the supplied uri, http method and customized headers. expirationInSeconds defaults
-             * to 0 which is the default 7 days.
-             */
-            Aws::String GeneratePresignedUrl(Aws::Http::URI& uri, Aws::Http::HttpMethod method, const char* region, const char* serviceName, const Aws::Http::HeaderValueCollection& customizedHeaders, long long expirationInSeconds = 0);
-
-            /**
-             * Generates a signed Uri using the injected signer. for the supplied uri and http method, region, service name and signer name. expirationInSeconds defaults
-             * to 0 which is the default 7 days.
-             */
-            Aws::String GeneratePresignedUrl(Aws::Http::URI& uri, Aws::Http::HttpMethod method, const char* region, const char* serviceName, const char* signerName, long long expirationInSeconds = 0) const;
-
-            /**
-             * Generates a signed Uri using the injected signer. for the supplied uri, http method, region, service name, signer name and customized headers. expirationInSeconds defaults
-             * to 0 which is the default 7 days.
-             */
-            Aws::String GeneratePresignedUrl(Aws::Http::URI& uri, Aws::Http::HttpMethod method, const char* region, const char* serviceName, const char* signerName, const Aws::Http::HeaderValueCollection& customizedHeaders, long long expirationInSeconds = 0);
-
-            Aws::String GeneratePresignedUrl(const Aws::AmazonWebServiceRequest& request, Aws::Http::URI& uri, Aws::Http::HttpMethod method,
+            Aws::String GeneratePresignedUrl(const Aws::AmazonWebServiceRequest& request, Aws::Http::URI& uri, Aws::Http::HttpMethod method, 
                 const Aws::Http::QueryStringParameterCollection& extraParams = Aws::Http::QueryStringParameterCollection(), long long expirationInSeconds = 0) const;
-
-            Aws::String GeneratePresignedUrl(const Aws::AmazonWebServiceRequest& request, Aws::Http::URI& uri, Aws::Http::HttpMethod method, const char* region, const char* serviceName,
-                const char* signerName, const Aws::Http::QueryStringParameterCollection& extraParams = Aws::Http::QueryStringParameterCollection(), long long expirationInSeconds = 0) const;
 
             Aws::String GeneratePresignedUrl(const Aws::AmazonWebServiceRequest& request, Aws::Http::URI& uri, Aws::Http::HttpMethod method, const char* region, const char* serviceName,
                 const Aws::Http::QueryStringParameterCollection& extraParams = Aws::Http::QueryStringParameterCollection(), long long expirationInSeconds = 0) const;
@@ -176,39 +159,29 @@ namespace Aws
              */
             void EnableRequestProcessing();
 
-            inline virtual const char* GetServiceClientName() const { return m_serviceName.c_str(); }
-            /**
-             * service client name is part of userAgent.
-             * We need to update userAgent after setting this name if it's not pre-set by customer.
-             * Note: this API should only be called in your extended class constructors.
-             */
-            virtual void SetServiceClientName(const Aws::String& name);
+            inline virtual const char* GetServiceClientName() const { return nullptr; }
 
         protected:
             /**
-             * Calls AttemptOneRequest until it either, succeeds, runs out of retries from the retry strategy,
+             * Calls AttemptOnRequest until it either, succeeds, runs out of retries from the retry strategy,
              * or encounters and error that is not retryable.
              */
             HttpResponseOutcome AttemptExhaustively(const Aws::Http::URI& uri,
                     const Aws::AmazonWebServiceRequest& request,
                     Http::HttpMethod httpMethod,
-                    const char* signerName,
-                    const char* signerRegionOverride = nullptr,
-                    const char* signerServiceNameOverride = nullptr) const;
+                    const char* signerName) const;
 
             /**
-             * Calls AttemptOneRequest until it either, succeeds, runs out of retries from the retry strategy,
+             * Calls AttemptOnRequest until it either, succeeds, runs out of retries from the retry strategy,
              * or encounters and error that is not retryable. This method is for payloadless requests e.g. GET, DELETE, HEAD
-             *
+             * 
              * requestName is used for metrics and defaults to empty string, to avoid empty names in metrics provide a valid
              * name.
              */
-            HttpResponseOutcome AttemptExhaustively(const Aws::Http::URI& uri,
+            HttpResponseOutcome AttemptExhaustively(const Aws::Http::URI& uri, 
                     Http::HttpMethod httpMethod,
                     const char* signerName,
-                    const char* requestName = "",
-                    const char* signerRegionOverride = nullptr,
-                    const char* signerServiceNameOverride = nullptr) const;
+                    const char* requestName = "") const;
 
             /**
              * Build an Http Request from the AmazonWebServiceRequest object. Signs the request, sends it accross the wire
@@ -216,22 +189,18 @@ namespace Aws
              */
             HttpResponseOutcome AttemptOneRequest(const std::shared_ptr<Http::HttpRequest>& httpRequest,
                     const Aws::AmazonWebServiceRequest& request,
-                    const char* signerName,
-                    const char* signerRegionOverride = nullptr,
-                    const char* signerServiceNameOverride = nullptr) const;
+                    const char* signerName) const;
 
             /**
              * Signs an Http Request, sends it accross the wire
              * then reports the http response. This method is for payloadless requests e.g. GET, DELETE, HEAD
-             *
+             * 
              * requestName is used for metrics and defaults to empty string, to avoid empty names in metrics provide a valid
              * name.
              */
             HttpResponseOutcome AttemptOneRequest(const std::shared_ptr<Http::HttpRequest>& httpRequest,
                     const char* signerName,
-                    const char* requestName = "",
-                    const char* signerRegionOverride = nullptr,
-                    const char* signerServiceNameOverride = nullptr) const;
+                    const char* requestName = "") const;
 
             /**
              * This is used for structureless response payloads (file streams, binary data etc...). It calls AttemptExhaustively, but upon
@@ -240,23 +209,19 @@ namespace Aws
             StreamOutcome MakeRequestWithUnparsedResponse(const Aws::Http::URI& uri,
                     const Aws::AmazonWebServiceRequest& request,
                     Http::HttpMethod method = Http::HttpMethod::HTTP_POST,
-                    const char* signerName = Aws::Auth::SIGV4_SIGNER,
-                    const char* signerRegionOverride = nullptr,
-                    const char* signerServiceNameOverride = nullptr) const;
+                    const char* signerName = Aws::Auth::SIGV4_SIGNER) const;
 
             /**
              * This is used for structureless response payloads (file streams, binary data etc...). It calls AttemptExhaustively, but upon
              * return transfers ownership of the underlying stream for the http response to the caller.
-             *
+             * 
              * requestName is used for metrics and defaults to empty string, to avoid empty names in metrics provide a valid
              * name.
              */
             StreamOutcome MakeRequestWithUnparsedResponse(const Aws::Http::URI& uri,
                     Http::HttpMethod method = Http::HttpMethod::HTTP_POST,
                     const char* signerName = Aws::Auth::SIGV4_SIGNER,
-                    const char* requestName = "",
-                    const char* signerRegionOverride = nullptr,
-                    const char* signerServiceNameOverride = nullptr) const;
+                    const char* requestName = "") const;
 
             /**
              * Abstract.  Subclassing clients should override this to tell the client how to marshall error payloads
@@ -278,7 +243,7 @@ namespace Aws
             }
 
             /**
-             * Gets the corresponding signer from the signers map by name.
+             * Gets the corresonding signer from the signers map by name.
              */
             Aws::Client::AWSAuthSigner* GetSignerByName(const char* name) const;
         protected:
@@ -298,7 +263,6 @@ namespace Aws
              * Performs the HTTP request via the HTTP client while enforcing rate limiters
              */
             std::shared_ptr<Aws::Http::HttpResponse> MakeHttpRequest(std::shared_ptr<Aws::Http::HttpRequest>& request) const;
-            Aws::String m_region;
         private:
             /**
              * Try to adjust signer's clock
@@ -320,11 +284,8 @@ namespace Aws
             std::shared_ptr<Aws::Utils::RateLimits::RateLimiterInterface> m_writeRateLimiter;
             std::shared_ptr<Aws::Utils::RateLimits::RateLimiterInterface> m_readRateLimiter;
             Aws::String m_userAgent;
-            bool m_customizedUserAgent;
             std::shared_ptr<Aws::Utils::Crypto::Hash> m_hash;
-            long m_requestTimeoutMs;
             bool m_enableClockSkewAdjustment;
-            Aws::String m_serviceName;
         };
 
         typedef Utils::Outcome<AmazonWebServiceResult<Utils::Json::JsonValue>, AWSError<CoreErrors>> JsonOutcome;
@@ -370,25 +331,21 @@ namespace Aws
             JsonOutcome MakeRequest(const Aws::Http::URI& uri,
                 const Aws::AmazonWebServiceRequest& request,
                 Http::HttpMethod method = Http::HttpMethod::HTTP_POST,
-                const char* signerName = Aws::Auth::SIGV4_SIGNER,
-                const char* signerRegionOverride = nullptr,
-                const char* signerServiceNameOverride = nullptr) const;
+                const char* signerName = Aws::Auth::SIGV4_SIGNER) const;
 
             /**
              * Returns a Json document or an error from the request. Does some marshalling json and raw streams,
              * then just calls AttemptExhaustively.
-             *
+             * 
              * requestName is used for metrics and defaults to empty string, to avoid empty names in metrics provide a valid
              * name.
-             *
+             * 
              * method defaults to POST
              */
             JsonOutcome MakeRequest(const Aws::Http::URI& uri,
                 Http::HttpMethod method = Http::HttpMethod::HTTP_POST,
                 const char* signerName = Aws::Auth::SIGV4_SIGNER,
-                const char* requestName = "",
-                const char* signerRegionOverride = nullptr,
-                const char* signerServiceNameOverride = nullptr) const;
+                const char* requestName = "") const;
 
             JsonOutcome MakeEventStreamRequest(std::shared_ptr<Aws::Http::HttpRequest>& request) const;
         };
@@ -430,26 +387,22 @@ namespace Aws
             XmlOutcome MakeRequest(const Aws::Http::URI& uri,
                 const Aws::AmazonWebServiceRequest& request,
                 Http::HttpMethod method = Http::HttpMethod::HTTP_POST,
-                const char* signerName = Aws::Auth::SIGV4_SIGNER,
-                const char* signerRegionOverride = nullptr,
-                const char* signerServiceNameOverride = nullptr) const;
+                const char* signerName = Aws::Auth::SIGV4_SIGNER) const;
 
 
             /**
              * Returns an xml document or an error from the request. Does some marshalling xml and raw streams,
              * then just calls AttemptExhaustively.
-             *
+             * 
              * requestName is used for metrics and defaults to empty string, to avoid empty names in metrics provide a valid
              * name.
-             *
+             * 
              * method defaults to POST
              */
             XmlOutcome MakeRequest(const Aws::Http::URI& uri,
                 Http::HttpMethod method = Http::HttpMethod::HTTP_POST,
                 const char* signerName = Aws::Auth::SIGV4_SIGNER,
-                const char* requestName = "",
-                const char* signerRegionOverride = nullptr,
-                const char* signerServiceNameOverride = nullptr) const;
+                const char* requestName = "") const;
 
             /**
             * This is used for event stream response.
@@ -457,9 +410,7 @@ namespace Aws
             XmlOutcome MakeRequestWithEventStream(const Aws::Http::URI& uri,
                 const Aws::AmazonWebServiceRequest& request,
                 Http::HttpMethod method = Http::HttpMethod::HTTP_POST,
-                const char* singerName = Aws::Auth::SIGV4_SIGNER,
-                const char* signerRegionOverride = nullptr,
-                const char* signerServiceNameOverride = nullptr) const;
+                const char* singerName = Aws::Auth::SIGV4_SIGNER) const;
 
             /**
             * This is used for event stream response.
@@ -469,9 +420,7 @@ namespace Aws
             XmlOutcome MakeRequestWithEventStream(const Aws::Http::URI& uri,
                 Http::HttpMethod method = Http::HttpMethod::HTTP_POST,
                 const char* signerName = Aws::Auth::SIGV4_SIGNER,
-                const char* requestName = "",
-                const char* signerRegionOverride = nullptr,
-                const char* signerServiceNameOverride = nullptr) const;
+                const char* requestName = "") const;
         };
 
     } // namespace Client

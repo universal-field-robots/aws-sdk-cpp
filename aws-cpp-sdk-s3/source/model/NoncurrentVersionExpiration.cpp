@@ -1,7 +1,17 @@
-﻿/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+﻿/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 #include <aws/s3/model/NoncurrentVersionExpiration.h>
 #include <aws/core/utils/xml/XmlSerializer.h>
@@ -22,17 +32,13 @@ namespace Model
 
 NoncurrentVersionExpiration::NoncurrentVersionExpiration() : 
     m_noncurrentDays(0),
-    m_noncurrentDaysHasBeenSet(false),
-    m_newerNoncurrentVersions(0),
-    m_newerNoncurrentVersionsHasBeenSet(false)
+    m_noncurrentDaysHasBeenSet(false)
 {
 }
 
 NoncurrentVersionExpiration::NoncurrentVersionExpiration(const XmlNode& xmlNode) : 
     m_noncurrentDays(0),
-    m_noncurrentDaysHasBeenSet(false),
-    m_newerNoncurrentVersions(0),
-    m_newerNoncurrentVersionsHasBeenSet(false)
+    m_noncurrentDaysHasBeenSet(false)
 {
   *this = xmlNode;
 }
@@ -49,12 +55,6 @@ NoncurrentVersionExpiration& NoncurrentVersionExpiration::operator =(const XmlNo
       m_noncurrentDays = StringUtils::ConvertToInt32(StringUtils::Trim(Aws::Utils::Xml::DecodeEscapedXmlText(noncurrentDaysNode.GetText()).c_str()).c_str());
       m_noncurrentDaysHasBeenSet = true;
     }
-    XmlNode newerNoncurrentVersionsNode = resultNode.FirstChild("NewerNoncurrentVersions");
-    if(!newerNoncurrentVersionsNode.IsNull())
-    {
-      m_newerNoncurrentVersions = StringUtils::ConvertToInt32(StringUtils::Trim(Aws::Utils::Xml::DecodeEscapedXmlText(newerNoncurrentVersionsNode.GetText()).c_str()).c_str());
-      m_newerNoncurrentVersionsHasBeenSet = true;
-    }
   }
 
   return *this;
@@ -68,14 +68,6 @@ void NoncurrentVersionExpiration::AddToNode(XmlNode& parentNode) const
    XmlNode noncurrentDaysNode = parentNode.CreateChildElement("NoncurrentDays");
    ss << m_noncurrentDays;
    noncurrentDaysNode.SetText(ss.str());
-   ss.str("");
-  }
-
-  if(m_newerNoncurrentVersionsHasBeenSet)
-  {
-   XmlNode newerNoncurrentVersionsNode = parentNode.CreateChildElement("NewerNoncurrentVersions");
-   ss << m_newerNoncurrentVersions;
-   newerNoncurrentVersionsNode.SetText(ss.str());
    ss.str("");
   }
 

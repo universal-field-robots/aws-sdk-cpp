@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+  * 
+  * Licensed under the Apache License, Version 2.0 (the "License").
+  * You may not use this file except in compliance with the License.
+  * A copy of the License is located at
+  * 
+  *  http://aws.amazon.com/apache2.0
+  * 
+  * or in the "license" file accompanying this file. This file is distributed
+  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  * express or implied. See the License for the specific language governing
+  * permissions and limitations under the License.
+  */
 
 #include <aws/core/http/curl/CurlHandleContainer.h>
 #include <aws/core/utils/logging/LogMacros.h>
@@ -14,9 +24,9 @@ using namespace Aws::Http;
 static const char* CURL_HANDLE_CONTAINER_TAG = "CurlHandleContainer";
 
 
-CurlHandleContainer::CurlHandleContainer(unsigned maxSize, long httpRequestTimeout, long connectTimeout, bool enableTcpKeepAlive,
+CurlHandleContainer::CurlHandleContainer(unsigned maxSize, long httpRequestTimeout, long connectTimeout, bool enableTcpKeepAlive, 
                                         unsigned long tcpKeepAliveIntervalMs, long lowSpeedTime, unsigned long lowSpeedLimit) :
-                m_maxPoolSize(maxSize), m_httpRequestTimeout(httpRequestTimeout), m_connectTimeout(connectTimeout), m_enableTcpKeepAlive(enableTcpKeepAlive),
+                m_maxPoolSize(maxSize), m_httpRequestTimeout(httpRequestTimeout), m_connectTimeout(connectTimeout), m_enableTcpKeepAlive(enableTcpKeepAlive), 
                 m_tcpKeepAliveIntervalMs(tcpKeepAliveIntervalMs), m_lowSpeedTime(lowSpeedTime), m_lowSpeedLimit(lowSpeedLimit), m_poolSize(0)
 {
     AWS_LOGSTREAM_INFO(CURL_HANDLE_CONTAINER_TAG, "Initializing CurlHandleContainer with size " << maxSize);
@@ -60,45 +70,6 @@ void CurlHandleContainer::ReleaseCurlHandle(CURL* handle)
     }
 }
 
-void CurlHandleContainer::DestroyCurlHandle(CURL* handle)
-{
-    if (!handle)
-    {
-        return;
-    }
-
-    curl_easy_cleanup(handle);
-    AWS_LOGSTREAM_DEBUG(CURL_HANDLE_CONTAINER_TAG, "Destroy curl handle: " << handle);
-    {
-        std::lock_guard<std::mutex> locker(m_containerLock);
-        // Other threads could be blocked and waiting on m_handleContainer.Acquire()
-        // If the handle is not released back to the pool, it could create a deadlock
-        // Create a new handle and release that into the pool
-        handle = CreateCurlHandleInPool();
-    }
-    if (handle)
-    {
-        AWS_LOGSTREAM_DEBUG(CURL_HANDLE_CONTAINER_TAG, "Created replacement handle and released to pool: " << handle);
-    }
-}
-
-
-CURL* CurlHandleContainer::CreateCurlHandleInPool()
-{
-    CURL* curlHandle = curl_easy_init();
-
-    if (curlHandle)
-    {
-        SetDefaultOptionsOnHandle(curlHandle);
-        m_handleContainer.Release(curlHandle);
-    }
-    else
-    {
-        AWS_LOGSTREAM_ERROR(CURL_HANDLE_CONTAINER_TAG, "curl_easy_init failed to allocate.");
-    }
-    return curlHandle;
-}
-
 bool CurlHandleContainer::CheckAndGrowPool()
 {
     std::lock_guard<std::mutex> locker(m_containerLock);
@@ -111,14 +82,17 @@ bool CurlHandleContainer::CheckAndGrowPool()
         unsigned actuallyAdded = 0;
         for (unsigned i = 0; i < amountToAdd; ++i)
         {
-            CURL* curlHandle = CreateCurlHandleInPool();
+            CURL* curlHandle = curl_easy_init();
 
             if (curlHandle)
             {
+                SetDefaultOptionsOnHandle(curlHandle);
+                m_handleContainer.Release(curlHandle);
                 ++actuallyAdded;
             }
             else
             {
+                AWS_LOGSTREAM_ERROR(CURL_HANDLE_CONTAINER_TAG, "curl_easy_init failed to allocate.");
                 break;
             }
         }
@@ -145,8 +119,8 @@ void CurlHandleContainer::SetDefaultOptionsOnHandle(CURL* handle)
     curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, m_lowSpeedLimit);
     curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, m_lowSpeedTime < 1000 ? (m_lowSpeedTime == 0 ? 0 : 1) : m_lowSpeedTime / 1000);
     curl_easy_setopt(handle, CURLOPT_TCP_KEEPALIVE, m_enableTcpKeepAlive ? 1L : 0L);
-    curl_easy_setopt(handle, CURLOPT_TCP_KEEPINTVL, m_tcpKeepAliveIntervalMs / 1000);
-    curl_easy_setopt(handle, CURLOPT_TCP_KEEPIDLE, m_tcpKeepAliveIntervalMs / 1000);
+    curl_easy_setopt(handle, CURLOPT_TCP_KEEPINTVL, m_tcpKeepAliveIntervalMs);
+    curl_easy_setopt(handle, CURLOPT_TCP_KEEPIDLE, m_tcpKeepAliveIntervalMs);
 #ifdef CURL_HAS_H2
     curl_easy_setopt(handle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
 #endif

@@ -1,7 +1,17 @@
-﻿/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+﻿/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 #include <aws/s3/model/GetObjectResult.h>
 #include <aws/core/AmazonWebServiceResult.h>
@@ -21,7 +31,6 @@ GetObjectResult::GetObjectResult() :
     m_contentLength(0),
     m_missingMeta(0),
     m_serverSideEncryption(ServerSideEncryption::NOT_SET),
-    m_bucketKeyEnabled(false),
     m_storageClass(StorageClass::NOT_SET),
     m_requestCharged(RequestCharged::NOT_SET),
     m_replicationStatus(ReplicationStatus::NOT_SET),
@@ -56,7 +65,6 @@ GetObjectResult::GetObjectResult(GetObjectResult&& toMove) :
     m_sSECustomerAlgorithm(std::move(toMove.m_sSECustomerAlgorithm)),
     m_sSECustomerKeyMD5(std::move(toMove.m_sSECustomerKeyMD5)),
     m_sSEKMSKeyId(std::move(toMove.m_sSEKMSKeyId)),
-    m_bucketKeyEnabled(toMove.m_bucketKeyEnabled),
     m_storageClass(toMove.m_storageClass),
     m_requestCharged(toMove.m_requestCharged),
     m_replicationStatus(toMove.m_replicationStatus),
@@ -100,7 +108,6 @@ GetObjectResult& GetObjectResult::operator=(GetObjectResult&& toMove)
    m_sSECustomerAlgorithm = std::move(toMove.m_sSECustomerAlgorithm);
    m_sSECustomerKeyMD5 = std::move(toMove.m_sSECustomerKeyMD5);
    m_sSEKMSKeyId = std::move(toMove.m_sSEKMSKeyId);
-   m_bucketKeyEnabled = toMove.m_bucketKeyEnabled;
    m_storageClass = toMove.m_storageClass;
    m_requestCharged = toMove.m_requestCharged;
    m_replicationStatus = toMove.m_replicationStatus;
@@ -120,7 +127,6 @@ GetObjectResult::GetObjectResult(Aws::AmazonWebServiceResult<ResponseStream>&& r
     m_contentLength(0),
     m_missingMeta(0),
     m_serverSideEncryption(ServerSideEncryption::NOT_SET),
-    m_bucketKeyEnabled(false),
     m_storageClass(StorageClass::NOT_SET),
     m_requestCharged(RequestCharged::NOT_SET),
     m_replicationStatus(ReplicationStatus::NOT_SET),
@@ -274,12 +280,6 @@ GetObjectResult& GetObjectResult::operator =(Aws::AmazonWebServiceResult<Respons
     m_sSEKMSKeyId = sSEKMSKeyIdIter->second;
   }
 
-  const auto& bucketKeyEnabledIter = headers.find("x-amz-server-side-encryption-bucket-key-enabled");
-  if(bucketKeyEnabledIter != headers.end())
-  {
-     m_bucketKeyEnabled = StringUtils::ConvertToBool(bucketKeyEnabledIter->second.c_str());
-  }
-
   const auto& storageClassIter = headers.find("x-amz-storage-class");
   if(storageClassIter != headers.end())
   {
@@ -319,7 +319,7 @@ GetObjectResult& GetObjectResult::operator =(Aws::AmazonWebServiceResult<Respons
   const auto& objectLockRetainUntilDateIter = headers.find("x-amz-object-lock-retain-until-date");
   if(objectLockRetainUntilDateIter != headers.end())
   {
-    m_objectLockRetainUntilDate = DateTime(objectLockRetainUntilDateIter->second, DateFormat::ISO_8601);
+    m_objectLockRetainUntilDate = DateTime(objectLockRetainUntilDateIter->second, DateFormat::RFC822);
   }
 
   const auto& objectLockLegalHoldStatusIter = headers.find("x-amz-object-lock-legal-hold");

@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 package com.amazonaws.util.awsclientgenerator.domainmodels.codegeneration.cpp;
 
@@ -10,15 +20,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.List;
-import java.util.Arrays;
 
 public class PlatformAndKeywordSanitizer {
     private static final Set<String> FORBIDDEN_WORDS;
 
     private static final Map<Character,Character> ENUM_CHARS_MAPPING;
-
-    private static final Map<String, List<String>> PREDEFINED_SYMBOLS_MAPPING;
 
     static {
         Set<String> words = new HashSet<>();
@@ -152,14 +158,6 @@ public class PlatformAndKeywordSanitizer {
         ENUM_CHARS_MAPPING = Collections.unmodifiableMap(mapping);
     }
 
-    static {
-        Map<String, List<String>> mapping = new HashMap<String, List<String>>();
-        mapping.put("DynamoDB", Arrays.asList("IN"));
-        mapping.put("EC2", Arrays.asList("interface"));
-        mapping.put("S3Crt", Arrays.asList("IGNORE"));
-        PREDEFINED_SYMBOLS_MAPPING = Collections.unmodifiableMap(mapping);
-    }
-
     // Converts C2J enum strings to a valid character set for c++.
     public static String fixEnumValue (String enumValue) {
         String enumMemberName = enumValue;
@@ -181,11 +179,5 @@ public class PlatformAndKeywordSanitizer {
         }
 
         return enumMemberName;
-    }
-
-    // Return true if enum strings conflict with platform predefined symbols, especially on Windows.
-    // Need to #undef those symbols first.
-    public static boolean fixPredefinedSymbols(String serviceNamespace, String enumValue) {
-        return PREDEFINED_SYMBOLS_MAPPING.entrySet().stream().anyMatch(e -> e.getKey().equals(serviceNamespace) && e.getValue().stream().anyMatch(v -> v.equals(enumValue)));
     }
 }

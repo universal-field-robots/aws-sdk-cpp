@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License").
+  * You may not use this file except in compliance with the License.
+  * A copy of the License is located at
+  *
+  *  http://aws.amazon.com/apache2.0
+  *
+  * or in the "license" file accompanying this file. This file is distributed
+  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  * express or implied. See the License for the specific language governing
+  * permissions and limitations under the License.
+  */
 
 #pragma once
 
@@ -10,8 +20,6 @@
 #include <aws/core/Region.h>
 #include <aws/core/utils/memory/stl/AWSString.h>
 #include <aws/core/http/HttpTypes.h>
-#include <aws/core/utils/Array.h>
-#include <aws/crt/Optional.h>
 #include <memory>
 
 namespace Aws
@@ -28,27 +36,15 @@ namespace Aws
             class RateLimiterInterface;
         } // namespace RateLimits
     } // namespace Utils
+
     namespace Client
     {
         class RetryStrategy; // forward declare
 
         /**
-         * Sets the behaviors of the underlying HTTP clients handling response with 30x status code.
-         * By default, HTTP clients will always redirect the 30x response automatically, except when
-         * specifying aws-global as the client region, then SDK will handle 30x response and redirect
-         * the request manually.
-         */
-        enum class FollowRedirectsPolicy
-        {
-            DEFAULT,
-            ALWAYS,
-            NEVER
-        };
-
-        /**
-         * This mutable structure is used to configure any of the AWS clients.
-         * Default values can only be overwritten prior to passing to the client constructors.
-         */
+          * This mutable structure is used to configure any of the AWS clients.
+          * Default values can only be overwritten prior to passing to the client constructors.
+          */
         struct AWS_CORE_API ClientConfiguration
         {
             ClientConfiguration();
@@ -82,7 +78,7 @@ namespace Aws
             /**
              * This is currently only applicable for Curl to set the http request level timeout, including possible dns lookup time, connection establish time, ssl handshake time and actual data transmission time.
              * the corresponding Curl option is CURLOPT_TIMEOUT_MS
-             * defaults to 0, no http request level timeout.
+             * defaults to 0, no http request level timeout. 
              */
             long httpRequestTimeoutMs;
             /**
@@ -104,7 +100,7 @@ namespace Aws
             bool enableTcpKeepAlive;
             /**
              * Interval to send a keep-alive packet over the connection. Default 30 seconds. Minimum 15 seconds.
-             * WinHTTP & libcurl support this option. Note that for Curl, this value will be rounded to an integer with second granularity.
+             * WinHTTP & libcurl support this option.
              * No-op for WinINet and IXMLHTTPRequest2 client.
              */
             unsigned long tcpKeepAliveIntervalMs;
@@ -163,13 +159,9 @@ namespace Aws
             Aws::String proxySSLKeyType;
             /**
             * Passphrase to the private key file used to connect to an HTTPS proxy.
-            * Used to set CURLOPT_PROXY_KEYPASSWD in libcurl. Example: password1
+            * Used to set CURLOPT_PROXY_KEYPASSWD in libcurl. Example: password1 
             */
             Aws::String proxySSLKeyPassword;
-            /**
-            * Calls to hosts in this vector will not use proxy configuration
-            */
-            Aws::Utils::Array<Aws::String> nonProxyHosts;
             /**
             * Threading Executor implementation. Default uses std::thread::detach()
             */
@@ -204,9 +196,9 @@ namespace Aws
              */
             Aws::Http::TransferLibType httpLibOverride;
             /**
-             * Sets the behavior how http stack handles 30x redirect codes.
+             * If set to true the http stack will follow 300 redirect codes.
              */
-            FollowRedirectsPolicy followRedirects;
+            bool followRedirects;
 
             /**
              * Only works for Curl http client.
@@ -225,28 +217,23 @@ namespace Aws
             bool enableClockSkewAdjustment;
 
             /**
-             * Enable host prefix injection.
+             * Enable host prefix injection. 
              * For services whose endpoint is injectable. e.g. servicediscovery, you can modify the http host's prefix so as to add "data-" prefix for DiscoverInstances request.
-             * Default to true, enabled. You can disable it for testing purpose.
+             * Default to true, enabled. You can disable it for testing purpose. 
              */
             bool enableHostPrefixInjection;
 
             /**
-             * Enable endpoint discovery
-             * For some services to dynamically set up their endpoints for different requests.
-             * By default, service clients will decide if endpoint discovery is enabled or not.
-             * If disabled, regional or overridden endpoint will be used instead.
+             * Enable endpoint discovery 
+             * For some services to dynamically set up their endpoints for different requests. 
+             * Defaults to false, it's an opt-in feature.
+             * If disabled, regional or overriden endpoint will be used instead.
              * If a request requires endpoint discovery but you disabled it. The request will never succeed.
-             * A boolean value is either true of false, use Optional here to have an instance does not contain a value,
-             * such that SDK will decide the default behavior as stated before, if no value specified.
              */
-            Aws::Crt::Optional<bool> enableEndpointDiscovery;
-
-            /**
-             * profileName in config file that will be used by this object to resolve more configurations.
-             */
-            Aws::String profileName;
+            bool enableEndpointDiscovery;
         };
 
     } // namespace Client
 } // namespace Aws
+
+

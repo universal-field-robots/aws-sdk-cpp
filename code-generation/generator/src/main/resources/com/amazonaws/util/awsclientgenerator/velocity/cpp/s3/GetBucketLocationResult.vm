@@ -1,15 +1,13 @@
 #parse("com/amazonaws/util/awsclientgenerator/velocity/cfamily/Attribution.vm")
-#set($serviceName = $serviceModel.serviceName)
-#set($serviceNamespace = $serviceModel.metadata.namespace)
 
-\#include <aws/${serviceName}/model/GetBucketLocationResult.h>
+\#include <aws/s3/model/GetBucketLocationResult.h>
 \#include <aws/core/utils/xml/XmlSerializer.h>
 \#include <aws/core/AmazonWebServiceResult.h>
 \#include <aws/core/utils/StringUtils.h>
 
 \#include <utility>
 
-using namespace Aws::${serviceNamespace}::Model;
+using namespace Aws::S3::Model;
 using namespace Aws::Utils::Xml;
 using namespace Aws::Utils;
 using namespace Aws;
@@ -35,5 +33,6 @@ GetBucketLocationResult& GetBucketLocationResult::operator =(const AmazonWebServ
         m_locationConstraint = BucketLocationConstraintMapper::GetBucketLocationConstraintForName(StringUtils::Trim(resultNode.GetText().c_str()).c_str());
     }
 
-    return *this;
+    return *this; 
 }
+

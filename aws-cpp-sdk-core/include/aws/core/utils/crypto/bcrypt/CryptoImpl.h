@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License").
+  * You may not use this file except in compliance with the License.
+  * A copy of the License is located at
+  *
+  *  http://aws.amazon.com/apache2.0
+  *
+  * or in the "license" file accompanying this file. This file is distributed
+  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  * express or implied. See the License for the specific language governing
+  * permissions and limitations under the License.
+  */
 
 #pragma once
 
@@ -15,8 +25,8 @@
 
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
 
-#define WIN32_NO_STATUS
-#include <windows.h>
+#define WIN32_NO_STATUS 
+#include <windows.h> 
 #include <bcrypt.h>
 #include <winternl.h>
 #include <winerror.h>
@@ -50,7 +60,7 @@ namespace Aws
             {
             public:
                 /**
-                 * Initializes Windows Crypto APIs and gets the instance ready to perform crypto calculations.
+                 * Inititializes Windows Crypto APIs and gets the instance ready to perform crypto calculations.
                  * algorithmName is one of the values described here: https://msdn.microsoft.com/en-us/library/windows/desktop/aa375534(v=vs.85).aspx
                  */
                 BCryptHashImpl(LPCWSTR algorithmName, bool isHMAC);
@@ -84,7 +94,7 @@ namespace Aws
                 DWORD m_hashObjectLength;
                 PBYTE m_hashObject;
 
-                //I'm 99% sure the algorithm handle for windows is not thread safe, but I can't
+                //I'm 99% sure the algorithm handle for windows is not thread safe, but I can't 
                 //prove or disprove that theory. Therefore, we have to lock to be safe.
                 std::mutex m_algorithmMutex;
             };
@@ -110,20 +120,6 @@ namespace Aws
                  */
                 virtual HashResult Calculate(Aws::IStream& stream) override;
 
-            private:
-                BCryptHashImpl m_impl;
-            };
-
-            class Sha1BcryptImpl : public Hash
-            {
-            public:
-
-                Sha1BcryptImpl();
-                virtual ~Sha1BcryptImpl() {}
-
-                virtual HashResult Calculate(const Aws::String& str) override;
-
-                virtual HashResult Calculate(Aws::IStream& stream) override;
             private:
                 BCryptHashImpl m_impl;
             };
@@ -213,7 +209,7 @@ namespace Aws
                 virtual ~BCryptSymmetricCipher();
 
                 /**
-                 * You should call this multiple times until you run out of data. Call FinalizeEncryption() when finished to receive any remaining data.
+                 * You should call this multiple times until you run out of data. Call FinalizeEncryption() when finished to recieve any remaining data.
                  * Once you call this method the first time, it can not ever be used with DecryptBuffer()
                  */
                 CryptoBuffer EncryptBuffer(const CryptoBuffer& unEncryptedData) override;
@@ -223,7 +219,7 @@ namespace Aws
                  */
                 CryptoBuffer FinalizeEncryption() override;
                 /**
-                 * You should call this multiple times until you run out of data. Call FinalizeDecryption() when finished to receive any remaining data.
+                 * You should call this multiple times until you run out of data. Call FinalizeDecryption() when finished to recieve any remaining data.
                  * Once you call this method the first time, it can not ever be used with EncryptBuffer()
                  */
                 CryptoBuffer DecryptBuffer(const CryptoBuffer& encryptedData) override;
@@ -239,7 +235,6 @@ namespace Aws
                 void InitKey();
                 virtual size_t GetBlockSizeBytes() const = 0;
                 virtual size_t GetKeyLengthBits() const = 0;
-                bool CheckKeyAndIVLength(size_t expectedKeyLength, size_t expectedIVLength);
 
                 BCRYPT_ALG_HANDLE m_algHandle;
                 BCRYPT_KEY_HANDLE m_keyHandle;
@@ -248,10 +243,7 @@ namespace Aws
                 PBCRYPT_AUTHENTICATED_CIPHER_MODE_INFO m_authInfoPtr;
 
                 static BCRYPT_KEY_HANDLE ImportKeyBlob(BCRYPT_ALG_HANDLE handle, CryptoBuffer& key);
-                /**
-                 * We need to call BCryptEncrypt or BCryptEncrypt at least once. (corner case for empty string)
-                 */
-                bool m_encryptDecryptCalled;
+
             private:
                 void Init();
                 void Cleanup();
@@ -344,7 +336,7 @@ namespace Aws
                 size_t GetBlockSizeBytes() const override;
                 size_t GetKeyLengthBits() const override;
 
-            private:
+            private:                
                 void InitCipher();
 
                 static void InitBuffersToNull(Aws::Vector<ByteBuffer*>& initBuffers);
@@ -365,34 +357,25 @@ namespace Aws
             {
             public:
                 /**
-                * Create AES in GCM mode off of a 256 bit key. Auto Generates a 12 byte IV in the format
+                * Create AES in GCM mode off of a 256 bit key. Auto Generates a 16 byte IV in the format
                 */
                 AES_GCM_Cipher_BCrypt(const CryptoBuffer& key);
 
                 /**
-                * Create AES in GCM mode off of a 256 bit key and AAD. Auto Generates a 12 byte IV in the format
+                * Create AES in GCM mode off of a 256 bit key, 16 byte IV, and tag
                 */
-                AES_GCM_Cipher_BCrypt(const CryptoBuffer& key, const CryptoBuffer* aad);
+                AES_GCM_Cipher_BCrypt(CryptoBuffer&& key, CryptoBuffer&& initializationVector, CryptoBuffer&& tag = std::move(CryptoBuffer()));
 
                 /**
-                * Create AES in GCM mode off of a 256 bit key, 12 byte IV, tag, as well additional authentication data (AAD).
-                * Note that tag could be acquired from encrypt mode and should only and must be set for decrypt mode.
+                * Create AES in GCM mode off of a 256 bit key, 16 byte IV, and tag
                 */
-                AES_GCM_Cipher_BCrypt(CryptoBuffer&& key, CryptoBuffer&& initializationVector,
-                    CryptoBuffer&& tag = CryptoBuffer(0), CryptoBuffer&& aad = CryptoBuffer(0));
-
-                /**
-                * Create AES in GCM mode off of a 256 bit key, 12 byte IV, tag, as well additional authentication data (AAD)
-                * Note that tag could be acquired from encrypt mode and should only and must be set for decrypt mode.
-                */
-                AES_GCM_Cipher_BCrypt(const CryptoBuffer& key, const CryptoBuffer& initializationVector,
-                    const CryptoBuffer& tag = CryptoBuffer(0), const CryptoBuffer& aad = CryptoBuffer(0));
+                AES_GCM_Cipher_BCrypt(const CryptoBuffer& key, const CryptoBuffer& initializationVector, const CryptoBuffer& tag = CryptoBuffer());
 
                 AES_GCM_Cipher_BCrypt(const AES_GCM_Cipher_BCrypt&) = delete;
 
                 AES_GCM_Cipher_BCrypt& operator=(const AES_GCM_Cipher_BCrypt&) = delete;
 
-                AES_GCM_Cipher_BCrypt(AES_GCM_Cipher_BCrypt&& toMove) :
+                AES_GCM_Cipher_BCrypt(AES_GCM_Cipher_BCrypt&& toMove) : 
                     BCryptSymmetricCipher(std::move(toMove)), m_macBuffer(std::move(toMove.m_macBuffer)), m_finalBuffer(std::move(toMove.m_finalBuffer)),
                     m_authInfo(std::move(toMove.m_authInfo)) {}
 
@@ -412,13 +395,12 @@ namespace Aws
                 void InitCipher();
 
                 static size_t BlockSizeBytes;
-                static size_t IVLengthBytes;
+                static size_t NonceSizeBytes;
                 static size_t KeyLengthBits;
                 static size_t TagLengthBytes;
 
                 CryptoBuffer m_macBuffer;
                 CryptoBuffer m_finalBuffer;
-                CryptoBuffer m_aad;
                 BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO m_authInfo;
             };
 
@@ -431,7 +413,7 @@ namespace Aws
             public:
                 /**
                  * Create AES in KeyWrap mode off of a 256 bit key.
-                 * key - key encryption key
+                 * key - key encryption key               
                  */
                 AES_KeyWrap_Cipher_BCrypt(const CryptoBuffer& key);
 
@@ -450,16 +432,17 @@ namespace Aws
 
             protected:
                 size_t GetBlockSizeBytes() const override;
-                size_t GetKeyLengthBits() const override;
-
+                size_t GetKeyLengthBits() const override; 
+                
             private:
                 void InitCipher();
 
-                static size_t BlockSizeBytes;
+                static size_t BlockSizeBytes; 
                 static size_t KeyLengthBits;
-
+                
                 CryptoBuffer m_operatingKeyBuffer;
             };
         } // namespace Crypto
     } // namespace Utils
 } // namespace Aws
+

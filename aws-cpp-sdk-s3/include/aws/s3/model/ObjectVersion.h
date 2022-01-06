@@ -1,7 +1,17 @@
-﻿/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+﻿/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 #pragma once
 #include <aws/s3/S3_EXPORTS.h>
@@ -26,7 +36,7 @@ namespace Model
 {
 
   /**
-   * <p>The version of an object.</p><p><h3>See Also:</h3>   <a
+   * <p/><p><h3>See Also:</h3>   <a
    * href="http://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/ObjectVersion">AWS
    * API Reference</a></p>
    */
@@ -41,42 +51,42 @@ namespace Model
 
 
     /**
-     * <p>The entity tag is an MD5 hash of that version of the object.</p>
+     * <p/>
      */
     inline const Aws::String& GetETag() const{ return m_eTag; }
 
     /**
-     * <p>The entity tag is an MD5 hash of that version of the object.</p>
+     * <p/>
      */
     inline bool ETagHasBeenSet() const { return m_eTagHasBeenSet; }
 
     /**
-     * <p>The entity tag is an MD5 hash of that version of the object.</p>
+     * <p/>
      */
     inline void SetETag(const Aws::String& value) { m_eTagHasBeenSet = true; m_eTag = value; }
 
     /**
-     * <p>The entity tag is an MD5 hash of that version of the object.</p>
+     * <p/>
      */
     inline void SetETag(Aws::String&& value) { m_eTagHasBeenSet = true; m_eTag = std::move(value); }
 
     /**
-     * <p>The entity tag is an MD5 hash of that version of the object.</p>
+     * <p/>
      */
     inline void SetETag(const char* value) { m_eTagHasBeenSet = true; m_eTag.assign(value); }
 
     /**
-     * <p>The entity tag is an MD5 hash of that version of the object.</p>
+     * <p/>
      */
     inline ObjectVersion& WithETag(const Aws::String& value) { SetETag(value); return *this;}
 
     /**
-     * <p>The entity tag is an MD5 hash of that version of the object.</p>
+     * <p/>
      */
     inline ObjectVersion& WithETag(Aws::String&& value) { SetETag(std::move(value)); return *this;}
 
     /**
-     * <p>The entity tag is an MD5 hash of that version of the object.</p>
+     * <p/>
      */
     inline ObjectVersion& WithETag(const char* value) { SetETag(value); return *this;}
 
@@ -272,32 +282,32 @@ namespace Model
 
 
     /**
-     * <p>Specifies the owner of the object.</p>
+     * <p/>
      */
     inline const Owner& GetOwner() const{ return m_owner; }
 
     /**
-     * <p>Specifies the owner of the object.</p>
+     * <p/>
      */
     inline bool OwnerHasBeenSet() const { return m_ownerHasBeenSet; }
 
     /**
-     * <p>Specifies the owner of the object.</p>
+     * <p/>
      */
     inline void SetOwner(const Owner& value) { m_ownerHasBeenSet = true; m_owner = value; }
 
     /**
-     * <p>Specifies the owner of the object.</p>
+     * <p/>
      */
     inline void SetOwner(Owner&& value) { m_ownerHasBeenSet = true; m_owner = std::move(value); }
 
     /**
-     * <p>Specifies the owner of the object.</p>
+     * <p/>
      */
     inline ObjectVersion& WithOwner(const Owner& value) { SetOwner(value); return *this;}
 
     /**
-     * <p>Specifies the owner of the object.</p>
+     * <p/>
      */
     inline ObjectVersion& WithOwner(Owner&& value) { SetOwner(std::move(value)); return *this;}
 

@@ -1,7 +1,17 @@
-﻿/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+﻿/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 #pragma once
 #include <aws/s3/S3_EXPORTS.h>
@@ -37,130 +47,115 @@ namespace Model
 
 
     /**
-     * <p>Specifies the redirect behavior of all requests to a website endpoint of an
-     * Amazon S3 bucket.</p>
+     * <p/>
      */
     inline const RedirectAllRequestsTo& GetRedirectAllRequestsTo() const{ return m_redirectAllRequestsTo; }
 
     /**
-     * <p>Specifies the redirect behavior of all requests to a website endpoint of an
-     * Amazon S3 bucket.</p>
+     * <p/>
      */
     inline void SetRedirectAllRequestsTo(const RedirectAllRequestsTo& value) { m_redirectAllRequestsTo = value; }
 
     /**
-     * <p>Specifies the redirect behavior of all requests to a website endpoint of an
-     * Amazon S3 bucket.</p>
+     * <p/>
      */
     inline void SetRedirectAllRequestsTo(RedirectAllRequestsTo&& value) { m_redirectAllRequestsTo = std::move(value); }
 
     /**
-     * <p>Specifies the redirect behavior of all requests to a website endpoint of an
-     * Amazon S3 bucket.</p>
+     * <p/>
      */
     inline GetBucketWebsiteResult& WithRedirectAllRequestsTo(const RedirectAllRequestsTo& value) { SetRedirectAllRequestsTo(value); return *this;}
 
     /**
-     * <p>Specifies the redirect behavior of all requests to a website endpoint of an
-     * Amazon S3 bucket.</p>
+     * <p/>
      */
     inline GetBucketWebsiteResult& WithRedirectAllRequestsTo(RedirectAllRequestsTo&& value) { SetRedirectAllRequestsTo(std::move(value)); return *this;}
 
 
     /**
-     * <p>The name of the index document for the website (for example
-     * <code>index.html</code>).</p>
+     * <p/>
      */
     inline const IndexDocument& GetIndexDocument() const{ return m_indexDocument; }
 
     /**
-     * <p>The name of the index document for the website (for example
-     * <code>index.html</code>).</p>
+     * <p/>
      */
     inline void SetIndexDocument(const IndexDocument& value) { m_indexDocument = value; }
 
     /**
-     * <p>The name of the index document for the website (for example
-     * <code>index.html</code>).</p>
+     * <p/>
      */
     inline void SetIndexDocument(IndexDocument&& value) { m_indexDocument = std::move(value); }
 
     /**
-     * <p>The name of the index document for the website (for example
-     * <code>index.html</code>).</p>
+     * <p/>
      */
     inline GetBucketWebsiteResult& WithIndexDocument(const IndexDocument& value) { SetIndexDocument(value); return *this;}
 
     /**
-     * <p>The name of the index document for the website (for example
-     * <code>index.html</code>).</p>
+     * <p/>
      */
     inline GetBucketWebsiteResult& WithIndexDocument(IndexDocument&& value) { SetIndexDocument(std::move(value)); return *this;}
 
 
     /**
-     * <p>The object key name of the website error document to use for 4XX class
-     * errors.</p>
+     * <p/>
      */
     inline const ErrorDocument& GetErrorDocument() const{ return m_errorDocument; }
 
     /**
-     * <p>The object key name of the website error document to use for 4XX class
-     * errors.</p>
+     * <p/>
      */
     inline void SetErrorDocument(const ErrorDocument& value) { m_errorDocument = value; }
 
     /**
-     * <p>The object key name of the website error document to use for 4XX class
-     * errors.</p>
+     * <p/>
      */
     inline void SetErrorDocument(ErrorDocument&& value) { m_errorDocument = std::move(value); }
 
     /**
-     * <p>The object key name of the website error document to use for 4XX class
-     * errors.</p>
+     * <p/>
      */
     inline GetBucketWebsiteResult& WithErrorDocument(const ErrorDocument& value) { SetErrorDocument(value); return *this;}
 
     /**
-     * <p>The object key name of the website error document to use for 4XX class
-     * errors.</p>
+     * <p/>
      */
     inline GetBucketWebsiteResult& WithErrorDocument(ErrorDocument&& value) { SetErrorDocument(std::move(value)); return *this;}
 
 
     /**
-     * <p>Rules that define when a redirect is applied and the redirect behavior.</p>
+     * <p/>
      */
     inline const Aws::Vector<RoutingRule>& GetRoutingRules() const{ return m_routingRules; }
 
     /**
-     * <p>Rules that define when a redirect is applied and the redirect behavior.</p>
+     * <p/>
      */
     inline void SetRoutingRules(const Aws::Vector<RoutingRule>& value) { m_routingRules = value; }
 
     /**
-     * <p>Rules that define when a redirect is applied and the redirect behavior.</p>
+     * <p/>
      */
     inline void SetRoutingRules(Aws::Vector<RoutingRule>&& value) { m_routingRules = std::move(value); }
 
     /**
-     * <p>Rules that define when a redirect is applied and the redirect behavior.</p>
+     * <p/>
      */
     inline GetBucketWebsiteResult& WithRoutingRules(const Aws::Vector<RoutingRule>& value) { SetRoutingRules(value); return *this;}
 
     /**
-     * <p>Rules that define when a redirect is applied and the redirect behavior.</p>
+     * <p/>
      */
     inline GetBucketWebsiteResult& WithRoutingRules(Aws::Vector<RoutingRule>&& value) { SetRoutingRules(std::move(value)); return *this;}
 
     /**
-     * <p>Rules that define when a redirect is applied and the redirect behavior.</p>
+     * <p/>
      */
     inline GetBucketWebsiteResult& AddRoutingRules(const RoutingRule& value) { m_routingRules.push_back(value); return *this; }
 
     /**
-     * <p>Rules that define when a redirect is applied and the redirect behavior.</p>
+     * <p/>
      */
     inline GetBucketWebsiteResult& AddRoutingRules(RoutingRule&& value) { m_routingRules.push_back(std::move(value)); return *this; }
 

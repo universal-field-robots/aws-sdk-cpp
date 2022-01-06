@@ -3,7 +3,7 @@ macro(generate_pkgconfig_link_flags LIBS_LIST OUTPUT_VAR)
     foreach(LIB IN LISTS ${LIBS_LIST})
         if(${OUTPUT_VAR})
             set(${OUTPUT_VAR} "${${OUTPUT_VAR}} -l${LIB}")
-        else()
+        else() 
             set(${OUTPUT_VAR} "-l${LIB}")
         endif()
     endforeach()
@@ -33,6 +33,10 @@ endfunction(enable_unity_build)
 
 macro(setup_install)
     if(SIMPLE_INSTALL)
+        set(ALL_DEP_LIBS ${PLATFORM_DEP_LIBS_ABSTRACT_NAME} ${CLIENT_LIBS_ABSTRACT_NAME} ${CRYPTO_LIBS_ABSTRACT_NAME})
+        generate_pkgconfig_link_flags(ALL_DEP_LIBS ALL_DEP_LIBS_LINK_FLAGS)
+        set(ALL_DEP_LIBS_LINK_FLAGS "${ALL_DEP_LIBS_LINK_FLAGS}" PARENT_SCOPE)
+
         configure_file("${AWS_NATIVE_SDK_ROOT}/toolchains/pkg-config.pc.in" "${PROJECT_NAME}.pc" @ONLY)
 
         install( TARGETS ${PROJECT_NAME}
@@ -66,10 +70,9 @@ macro(do_packaging)
             COMPATIBILITY AnyNewerVersion
         )
 
-        # TODO: Re-enable export after Aws Common Runtime exports their libraries.
-        # export(EXPORT "${PROJECT_NAME}-targets"
-        #     FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake"
-        # )
+        export(EXPORT "${PROJECT_NAME}-targets"
+            FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake"
+        )
 
     if(${PROJECT_NAME} STREQUAL "aws-cpp-sdk-core")
         configure_file(

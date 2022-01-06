@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 package com.amazonaws.util.awsclientgenerator;
 
@@ -23,7 +33,6 @@ public class main {
     static final String NAMESPACE = "namespace";
     static final String LICENSE_TEXT = "license-text";
     static final String STANDALONE_OPTION = "standalone";
-    static final String ENABLE_VIRTUAL_OPERATIONS = "enable-virtual-operations";
 
     public static void main(String[] args) throws IOException {
 
@@ -60,16 +69,14 @@ public class main {
             boolean generateStandalonePakckage = argPairs.containsKey(STANDALONE_OPTION);
             String languageBinding = argPairs.get(LANGUAGE_BINDING_OPTION);
             String serviceName = argPairs.get(SERVICE_OPTION);
-            boolean enableVirtualOperations = argPairs.containsKey(ENABLE_VIRTUAL_OPERATIONS);
 
             //read from the piped input
             try (InputStream stream = getInputStreamReader(argPairs)) {
                 StringBuilder stringBuilder = new StringBuilder();
 
                 byte[] buffer = new byte[1024];
-                int bytes;
-                while ((bytes = stream.read(buffer)) > 0) {
-                    stringBuilder.append(new String(buffer, 0, bytes, StandardCharsets.UTF_8));
+                while (stream.read(buffer) > 0) {
+                    stringBuilder.append(new String(buffer, StandardCharsets.UTF_8));
                 }
 
                 arbitraryJson = stringBuilder.toString();
@@ -83,8 +90,7 @@ public class main {
                             serviceName,
                             namespace,
                             licenseText,
-                            generateStandalonePakckage,
-                            enableVirtualOperations);
+                            generateStandalonePakckage);
                     System.out.println(outputLib.getAbsolutePath());
                 } catch (GeneratorNotImplementedException e) {
                     e.printStackTrace();

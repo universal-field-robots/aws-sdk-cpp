@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License").
+  * You may not use this file except in compliance with the License.
+  * A copy of the License is located at
+  *
+  *  http://aws.amazon.com/apache2.0
+  *
+  * or in the "license" file accompanying this file. This file is distributed
+  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  * express or implied. See the License for the specific language governing
+  * permissions and limitations under the License.
+  */
 
 #pragma once
 
@@ -15,7 +25,6 @@
 #include <aws/core/utils/threading/ReaderWriterLock.h>
 #include <aws/core/utils/crypto/Sha256.h>
 #include <aws/core/utils/crypto/Sha256HMAC.h>
-#include <aws/crt/auth/Sigv4Signing.h>
 
 #include <memory>
 #include <atomic>
@@ -41,15 +50,7 @@ namespace Aws
     {
         class AWSCredentials;
         class AWSCredentialsProvider;
-
-        enum class AWSSigningAlgorithm
-        {
-            SIGV4 = static_cast<int>(Aws::Crt::Auth::SigningAlgorithm::SigV4),
-            ASYMMETRIC_SIGV4 = static_cast<int>(Aws::Crt::Auth::SigningAlgorithm::SigV4A),
-        };
-
         AWS_CORE_API extern const char SIGV4_SIGNER[];
-        AWS_CORE_API extern const char ASYMMETRIC_SIGV4_SIGNER[];
         AWS_CORE_API extern const char EVENTSTREAM_SIGV4_SIGNER[];
         AWS_CORE_API extern const char SIGNATURE[];
         AWS_CORE_API extern const char NULL_SIGNER[];
@@ -75,42 +76,10 @@ namespace Aws
 
             /**
              * Signs the request itself (usually by adding a signature header) based on info in the request and uri.
-             * If signBody is false and https is being used then the body of the payload will not be signed.
+             *  If signBody is false and https is being used then the body of the payload will not be signed. 
              * The default virtual function, just calls SignRequest.
              */
-            virtual bool SignRequest(Aws::Http::HttpRequest& request, bool signBody) const
-            {
-                AWS_UNREFERENCED_PARAM(signBody);
-                return SignRequest(request);
-            }
-
-            /**
-             * Signs the request itself (usually by adding a signature header) based on info in the request and uri.
-             * If signBody is false and https is being used then the body of the payload will not be signed.
-             * The default virtual function, just calls SignRequest.
-             * Using m_region by default if parameter region is nullptr.
-             */
-            virtual bool SignRequest(Aws::Http::HttpRequest& request, const char* region, bool signBody) const
-            {
-                AWS_UNREFERENCED_PARAM(signBody);
-                AWS_UNREFERENCED_PARAM(region);
-                return SignRequest(request);
-            }
-
-            /**
-             * Signs the request itself (usually by adding a signature header) based on info in the request and uri.
-             * If signBody is false and https is being used then the body of the payload will not be signed.
-             * The default virtual function, just calls SignRequest.
-             * Using m_region by default if parameter region is nullptr.
-             * Using m_serviceName by default if parameter serviceName is nullptr.
-             */
-            virtual bool SignRequest(Aws::Http::HttpRequest& request, const char* region, const char* serviceName, bool signBody) const
-            {
-                AWS_UNREFERENCED_PARAM(signBody);
-                AWS_UNREFERENCED_PARAM(region);
-                AWS_UNREFERENCED_PARAM(serviceName);
-                return SignRequest(request);
-            }
+            virtual bool SignRequest(Aws::Http::HttpRequest& request, bool signBody) const { AWS_UNREFERENCED_PARAM(signBody); return SignRequest(request); }
 
             /**
              * Signs a single event message in an event stream.
@@ -135,15 +104,12 @@ namespace Aws
             /**
             * Generates a signed Uri using the injected signer. for the supplied uri and http method and region. expirationInSeconds defaults
             * to 0 which is the default 7 days.
-            * Using m_region by default if parameter region is nullptr.
             */
             virtual bool PresignRequest(Aws::Http::HttpRequest& request, const char* region, long long expirationInSeconds = 0) const = 0;
 
             /**
             * Generates a signed Uri using the injected signer. for the supplied uri and http method, region, and service name. expirationInSeconds defaults
             * to 0 which is the default 7 days.
-            * Using m_region by default if parameter region is nullptr.
-            * Using m_serviceName by default if parameter serviceName is nullptr.
             */
             virtual bool PresignRequest(Aws::Http::HttpRequest& request, const char* region, const char* serviceName, long long expirationInSeconds = 0) const = 0;
 
@@ -163,7 +129,7 @@ namespace Aws
              */
             virtual Aws::Utils::DateTime GetSigningTimestamp() const { return Aws::Utils::DateTime::Now() + GetClockSkewOffset(); }
 
-        protected:
+        protected:            
             virtual std::chrono::milliseconds GetClockSkewOffset() const { return m_clockSkew.load(); }
 
             std::atomic<std::chrono::milliseconds> m_clockSkew;
@@ -206,7 +172,7 @@ namespace Aws
              */
             AWSAuthV4Signer(const std::shared_ptr<Auth::AWSCredentialsProvider>& credentialsProvider,
                             const char* serviceName, const Aws::String& region, PayloadSigningPolicy signingPolicy = PayloadSigningPolicy::RequestDependent,
-                            bool urlEscapePath = true, Aws::Auth::AWSSigningAlgorithm signingAlgorithm = Aws::Auth::AWSSigningAlgorithm::SIGV4);
+                            bool urlEscapePath = true);
 
             virtual ~AWSAuthV4Signer();
 
@@ -214,53 +180,20 @@ namespace Aws
              * AWSAuthV4signer's implementation of virtual function from base class
              * Return Auth Signer's name, here the value is specified in Aws::Auth::DEFAULT_AUTHV4_SIGNER.
              */
-            const char* GetName() const override
-            {
-                if (m_signingAlgorithm == Aws::Auth::AWSSigningAlgorithm::ASYMMETRIC_SIGV4)
-                {
-                    return Aws::Auth::ASYMMETRIC_SIGV4_SIGNER;
-                }
-                else
-                {
-                    return Aws::Auth::SIGV4_SIGNER;
-                }
-            }
+            const char* GetName() const override { return Aws::Auth::SIGV4_SIGNER; }
 
             /**
              * Signs the request itself based on info in the request and uri.
              * Uses AWS Auth V4 signing method with SHA256 HMAC algorithm.
              */
-            bool SignRequest(Aws::Http::HttpRequest& request) const override
-            {
-                return SignRequest(request, m_region.c_str(), m_serviceName.c_str(), true/*signBody*/);
-            }
+            bool SignRequest(Aws::Http::HttpRequest& request) const override;
 
             /**
             * Signs the request itself based on info in the request and uri.
             * Uses AWS Auth V4 signing method with SHA256 HMAC algorithm. If signBody is false
             * and https is being used then the body of the payload will not be signed.
             */
-            bool SignRequest(Aws::Http::HttpRequest& request, bool signBody) const override
-            {
-                return SignRequest(request, m_region.c_str(), m_serviceName.c_str(), signBody);
-            }
-
-            /**
-             * Uses AWS Auth V4 signing method with SHA256 HMAC algorithm. If signBody is false
-             * and https is being used then the body of the payload will not be signed.
-             * Using m_region by default if parameter region is nullptr.
-             */
-            bool SignRequest(Aws::Http::HttpRequest& request, const char* region, bool signBody) const override
-            {
-                return SignRequest(request, region, m_serviceName.c_str(), signBody);
-            }
-
-            /**
-             * Uses AWS Auth V4 signing method with SHA256 HMAC algorithm. If signBody is false
-             * and https is being used then the body of the payload will not be signed.
-             * Using m_region by default if parameter region is nullptr.
-             */
-            bool SignRequest(Aws::Http::HttpRequest& request, const char* region, const char* serviceName, bool signBody) const override;
+            bool SignRequest(Aws::Http::HttpRequest& request, bool signBody) const override;
 
             /**
             * Takes a request and signs the URI based on the HttpMethod, URI and other info from the request.
@@ -272,11 +205,10 @@ namespace Aws
             bool PresignRequest(Aws::Http::HttpRequest& request, long long expirationInSeconds = 0) const override;
 
             /**
-            * Takes a request and signs the URI based on the HttpMethod, URI and other info from the request.
+            * Takes a request and signs the URI based on the HttpMethod, URI and other info from the request.            
             * The URI can then be used in a normal HTTP call until expiration.
             * Uses AWS Auth V4 signing method with SHA256 HMAC algorithm.
             * expirationInSeconds defaults to 0 which provides a URI good for 7 days.
-            * Using m_region by default if parameter region is nullptr.
             */
             bool PresignRequest(Aws::Http::HttpRequest& request, const char* region, long long expirationInSeconds = 0) const override;
 
@@ -285,8 +217,6 @@ namespace Aws
             * The URI can then be used in a normal HTTP call until expiration.
             * Uses AWS Auth V4 signing method with SHA256 HMAC algorithm.
             * expirationInSeconds defaults to 0 which provides a URI good for 7 days.
-            * Using m_region by default if parameter region is nullptr.
-            * Using m_serviceName by default if parameter serviceName is nullptr.
             */
             bool PresignRequest(Aws::Http::HttpRequest& request, const char* region, const char* serviceName, long long expirationInSeconds = 0) const override;
 
@@ -302,7 +232,7 @@ namespace Aws
         private:
 
             Aws::String GenerateSignature(const Aws::Auth::AWSCredentials& credentials,
-                    const Aws::String& stringToSign, const Aws::String& simpleDate, const Aws::String& region,
+                    const Aws::String& stringToSign, const Aws::String& simpleDate, const Aws::String& region, 
                     const Aws::String& serviceName) const;
 
             Aws::String GenerateSignature(const Aws::String& stringToSign, const Aws::Utils::ByteBuffer& key) const;
@@ -314,10 +244,8 @@ namespace Aws
             Aws::Utils::ByteBuffer ComputeHash(const Aws::String& secretKey, const Aws::String& simpleDate) const;
             Aws::Utils::ByteBuffer ComputeHash(const Aws::String& secretKey,
                     const Aws::String& simpleDate, const Aws::String& region, const Aws::String& serviceName) const;
-            bool SignRequestWithSigV4a(Aws::Http::HttpRequest& request, const char* region, const char* serviceName,
-                    bool signBody, long long expirationTimeInSeconds, Aws::Crt::Auth::SignatureType signatureType) const;
 
-            Aws::Auth::AWSSigningAlgorithm m_signingAlgorithm;
+
             std::shared_ptr<Auth::AWSCredentialsProvider> m_credentialsProvider;
             const Aws::String m_serviceName;
             const Aws::String m_region;
@@ -347,22 +275,12 @@ namespace Aws
 
             bool SignEventMessage(Aws::Utils::Event::Message&, Aws::String& priorSignature) const override;
 
-            bool SignRequest(Aws::Http::HttpRequest& request) const override
+            bool SignRequest(Aws::Http::HttpRequest& r) const override
             {
-                return SignRequest(request, m_region.c_str(), m_serviceName.c_str(), true);
+                return SignRequest(r, true);
             }
 
-            bool SignRequest(Aws::Http::HttpRequest& request, bool signBody) const override
-            {
-                return SignRequest(request, m_region.c_str(), m_serviceName.c_str(), signBody);
-            }
-
-            bool SignRequest(Aws::Http::HttpRequest& request, const char* region, bool signBody) const override
-            {
-                return SignRequest(request, region, m_serviceName.c_str(), signBody);
-            }
-
-            bool SignRequest(Aws::Http::HttpRequest& request, const char* region, const char* serviceName, bool signBody) const override;
+            bool SignRequest(Aws::Http::HttpRequest& request, bool signBody) const override;
 
             /**
              * Do nothing
@@ -382,7 +300,7 @@ namespace Aws
             bool ShouldSignHeader(const Aws::String& header) const;
         private:
             Utils::ByteBuffer GenerateSignature(const Aws::Auth::AWSCredentials& credentials,
-                    const Aws::String& stringToSign, const Aws::String& simpleDate, const Aws::String& region, const Aws::String& serviceName) const;
+                    const Aws::String& stringToSign, const Aws::String& simpleDate) const;
             Utils::ByteBuffer GenerateSignature(const Aws::String& stringToSign, const Aws::Utils::ByteBuffer& key) const;
             Aws::String GenerateStringToSign(const Aws::String& dateValue, const Aws::String& simpleDate,
                     const Aws::String& canonicalRequestHash, const Aws::String& region,
@@ -419,6 +337,11 @@ namespace Aws
              * Do nothing
              */
             bool SignRequest(Aws::Http::HttpRequest&) const override { return true; }
+
+            /**
+             * Do nothing
+             */
+            bool SignRequest(Aws::Http::HttpRequest&, bool) const override { return true; }
 
             /**
              * Do nothing

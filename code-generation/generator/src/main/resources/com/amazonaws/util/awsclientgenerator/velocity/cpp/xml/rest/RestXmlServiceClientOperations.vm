@@ -1,18 +1,4 @@
 #foreach($operation in $serviceModel.operations)
-#if(!$operation.s3CrtSpecific)
-#if($arnEndpointSupported)
-#if($multiRegionAccessPointSupported)
-#set($signerName = ", computeEndpointOutcome.GetResult().signerName.c_str() /*signerName*/")
-#else
-#set($signerName = ", Aws::Auth::SIGV4_SIGNER")
-#end
-#set($signerRegionOverride = ", computeEndpointOutcome.GetResult().signerRegion.c_str() /*signerRegionOverride*/")
-#set($signerServiceNameOverride = ", computeEndpointOutcome.GetResult().signerServiceName.c_str() /*signerServiceNameOverride*/")
-#else
-#set($signerName = "")
-#set($signerRegionOverride = "")
-#set($signerServiceNameOverride = "")
-#end
 #if($operation.result.shape.hasEventStreamMembers())
 #set($constText = "")
 #set($refText = "&")
@@ -25,9 +11,7 @@ ${operation.name}Outcome ${className}::${operation.name}(${constText}${operation
 {
 #parse("com/amazonaws/util/awsclientgenerator/velocity/cpp/ServiceClientOperationRequestRequiredMemberValidate.vm")
 #parse("com/amazonaws/util/awsclientgenerator/velocity/cpp/ServiceClientOperationEndpointPrepareCommonBody.vm")
-#if($operation.http.requestUri.contains("?"))
   Aws::StringStream ss;
-#end
 #set($uriParts = $operation.http.requestUriParts)
 #set($uriVars = $operation.http.requestParameters)
 #set($partIndex = 1)
@@ -38,31 +22,21 @@ ${operation.name}Outcome ${className}::${operation.name}(${constText}${operation
 #set($queryStart = true)
 #set($pathAndQuery = $operation.http.splitUriPartIntoPathAndQuery($uriPartString))
 #if(!$pathAndQuery.get(0).isEmpty())
-  uri.AddPathSegments("${pathAndQuery.get(0)}");
+  ss << "${pathAndQuery.get(0)}";
+  uri.SetPath(uri.GetPath() + ss.str());
 #end
   ss.str("${pathAndQuery.get(1)}");
-#elseif(!$uriPartString.equals("/"))
-  uri.AddPathSegments("$uriPartString");
+#else
+  ss << "$uriPartString";
 #end
 #foreach($var in $uriVars)
 #set($varIndex = $partIndex - 1)
-#set($uriVar = $uriVars.get($varIndex).replace('+', ''))
-#set($greedySyntax = $uriVars.get($varIndex).contains("+"))
 #if(!$skipFirst)
-#set($partShapeMember = $operation.request.shape.getMemberByLocationName($uriVar))
+#set($partShapeMember = $operation.request.shape.getMemberByLocationName($uriVars.get($varIndex)))
 #if($partShapeMember.shape.enum)
-#set($parameter = "${partShapeMember.shape.name}Mapper::GetNameFor${partShapeMember.shape.name}(request.Get${CppViewHelper.convertToUpperCamel($operation.request.shape.getMemberNameByLocationName($uriVar))}())")
+  ss << ${partShapeMember.shape.name}Mapper::GetNameFor${partShapeMember.shape.name}(request.Get${CppViewHelper.convertToUpperCamel($operation.request.shape.getMemberNameByLocationName($uriVars.get($varIndex)))}());
 #else
-#set($parameter = "request.Get${CppViewHelper.convertToUpperCamel($operation.request.shape.getMemberNameByLocationName($uriVar))}()")
-#end
-#if($queryStart)
-  ss << $parameter;
-#else
-#if($greedySyntax)
-  uri.AddPathSegments($parameter);
-#else
-  uri.AddPathSegment($parameter);
-#end
+  ss << request.Get${CppViewHelper.convertToUpperCamel($operation.request.shape.getMemberNameByLocationName($uriVars.get($varIndex)))}();
 #end
 #if($uriParts.size() > $partIndex)
 #set($uriPartString = "${uriParts.get($partIndex)}")
@@ -70,11 +44,12 @@ ${operation.name}Outcome ${className}::${operation.name}(${constText}${operation
 #set($queryStart = true)
 #set($pathAndQuery = $operation.http.splitUriPartIntoPathAndQuery($uriPartString))
 #if(!$pathAndQuery.get(0).isEmpty())
-  uri.AddPathSegments("${pathAndQuery.get(0)}");
+  ss << "${pathAndQuery.get(0)}";
 #end
+  uri.SetPath(uri.GetPath() + ss.str());
   ss.str("${pathAndQuery.get(1)}");
-#elseif(!$uriPartString.equals("/"))
-  uri.AddPathSegments("$uriPartString");
+#else
+  ss << "$uriPartString";
 #end
 #end
 #end
@@ -82,24 +57,39 @@ ${operation.name}Outcome ${className}::${operation.name}(${constText}${operation
 #set($skipFirst = false)
 #end
 #end
-#if($queryStart)
-  uri.SetQueryString(ss.str());
-#end
-#if($operation.hasPreSignedUrl)
-#set($requestText = "newRequest")
+#if(!$queryStart)
+  uri.SetPath(uri.GetPath() + ss.str());
 #else
-#set($requestText = "request")
+  uri.SetQueryString(ss.str());
 #end
 #if($operation.result && $operation.result.shape.hasEventStreamMembers())
   request.SetResponseStreamFactory(
       [&] { request.GetEventStreamDecoder().Reset(); return Aws::New<Aws::Utils::Event::EventDecoderStream>(ALLOCATION_TAG, request.GetEventStreamDecoder()); }
   );
-  return ${operation.name}Outcome(MakeRequestWithEventStream(uri, ${requestText}, Aws::Http::HttpMethod::HTTP_${operation.http.method}${signerName}${signerRegionOverride}${signerServiceNameOverride}));
+  XmlOutcome outcome = MakeRequestWithEventStream(uri, request, Aws::Http::HttpMethod::HTTP_${operation.http.method});
 #elseif($operation.result && $operation.result.shape.hasStreamMembers())
-  return ${operation.name}Outcome(MakeRequestWithUnparsedResponse(uri, ${requestText}, Aws::Http::HttpMethod::HTTP_${operation.http.method}${signerName}${signerRegionOverride}${signerServiceNameOverride}));
+  StreamOutcome outcome = MakeRequestWithUnparsedResponse(uri, request, Aws::Http::HttpMethod::HTTP_${operation.http.method});
 #else
-  return ${operation.name}Outcome(MakeRequest(uri, ${requestText}, Aws::Http::HttpMethod::HTTP_${operation.http.method}${signerName}${signerRegionOverride}${signerServiceNameOverride}));
+  XmlOutcome outcome = MakeRequest(uri, request, Aws::Http::HttpMethod::HTTP_${operation.http.method});
 #end
+  if(outcome.IsSuccess())
+  {
+#if(${operation.result})
+#if($operation.result.shape.hasEventStreamMembers())
+    return ${operation.name}Outcome(NoResult());
+#elseif($operation.result.shape.hasStreamMembers())
+    return ${operation.name}Outcome(${operation.result.shape.name}(outcome.GetResultWithOwnership()));
+#else
+    return ${operation.name}Outcome(${operation.result.shape.name}(outcome.GetResult()));
+#end
+#else
+    return ${operation.name}Outcome(NoResult());
+#end
+  }
+  else
+  {
+    return ${operation.name}Outcome(outcome.GetError());
+  }
 }
 
 ${operation.name}OutcomeCallable ${className}::${operation.name}Callable(${constText}${operation.request.shape.name}& request) const
@@ -124,21 +114,38 @@ void ${className}::${operation.name}AsyncHelper(${constText}${operation.request.
 ${operation.name}Outcome ${className}::${operation.name}() const
 {
   Aws::StringStream ss;
-#if($virtualAddressingSupported || $arnEndpointSupported)
-  ComputeEndpointOutcome computeEndpointOutcome = ComputeEndpointString();
-  if (!computeEndpointOutcome.IsSuccess())
-  {
-    return ${operation.name}Outcome(computeEndpointOutcome.GetError());
-  }
-  ss << computeEndpointOutcome.GetResult().endpoint;
+#if($virtualAddressingSupported || $accountIdInHostnameSupported)
+  ss << ComputeEndpointString();
+#else
+#if($metadata.hasEndpointTrait)
+  ss << m_baseUri << "${operation.http.requestUri}";
+#else
+  ss << m_uri << "${operation.http.requestUri}";
+#end
 #end
 #if($operation.result && $operation.result.shape.hasStreamMembers())
-  return ${operation.name}Outcome(MakeRequestWithUnparsedResponse(ss.str(), Aws::Http::HttpMethod::HTTP_${operation.http.method}, $operation.request.shape.signerName, "${operation.name}"${signerRegionOverride}${signerServiceNameOverride}));
+  StreamOutcome outcome = MakeRequestWithUnparsedResponse(ss.str(), Aws::Http::HttpMethod::HTTP_${operation.http.method}, $operation.request.shape.signerName, "${operation.name}");
 #elseif($operation.request)
-  return ${operation.name}Outcome(MakeRequest(ss.str(), Aws::Http::HttpMethod::HTTP_${operation.http.method}, $operation.request.shape.signerName, "${operation.name}"${signerRegionOverride}${signerServiceNameOverride}));
+  XmlOutcome outcome = MakeRequest(ss.str(), Aws::Http::HttpMethod::HTTP_${operation.http.method}, $operation.request.shape.signerName, "{operation.name}")
 #else
-  return ${operation.name}Outcome(MakeRequest(ss.str(), Aws::Http::HttpMethod::HTTP_${operation.http.method}, Aws::Auth::SIGV4_SIGNER, "${operation.name}"${signerRegionOverride}${signerServiceNameOverride}));
+  XmlOutcome outcome = MakeRequest(ss.str(), Aws::Http::HttpMethod::HTTP_${operation.http.method}, Aws::Auth::SIGV4_SIGNER, "${operation.name}");
 #end
+  if(outcome.IsSuccess())
+  {
+#if(${operation.result})
+#if($operation.result.shape.hasStreamMembers())
+    return ${operation.name}Outcome(${operation.result.shape.name}(outcome.GetResultWithOwnership()));
+#else
+    return ${operation.name}Outcome(${operation.result.shape.name}(outcome.GetResult()));
+#end
+#else
+    return ${operation.name}Outcome(NoResult());
+#end
+  }
+  else
+  {
+    return ${operation.name}Outcome(outcome.GetError());
+  }
 }
 
 ${operation.name}OutcomeCallable ${className}::${operation.name}Callable() const
@@ -159,6 +166,5 @@ void ${className}::${operation.name}AsyncHelper(${constText}${operation.name}Res
   handler(this, ${operation.name}(), context);
 }
 
-#end
 #end
 #end

@@ -1,7 +1,17 @@
-﻿/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+﻿/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 #include <aws/s3/model/PutObjectRetentionRequest.h>
 #include <aws/core/utils/xml/XmlSerializer.h>
@@ -26,7 +36,6 @@ PutObjectRetentionRequest::PutObjectRetentionRequest() :
     m_bypassGovernanceRetention(false),
     m_bypassGovernanceRetentionHasBeenSet(false),
     m_contentMD5HasBeenSet(false),
-    m_expectedBucketOwnerHasBeenSet(false),
     m_customizedAccessLogTagHasBeenSet(false)
 {
 }
@@ -87,8 +96,8 @@ Aws::Http::HeaderValueCollection PutObjectRetentionRequest::GetRequestSpecificHe
 
   if(m_bypassGovernanceRetentionHasBeenSet)
   {
-    ss << std::boolalpha << m_bypassGovernanceRetention;
-    headers.emplace("x-amz-bypass-governance-retention", ss.str());
+    ss << m_bypassGovernanceRetention;
+    headers.emplace("x-amz-bypass-governance-retention",  ss.str());
     ss.str("");
   }
 
@@ -96,13 +105,6 @@ Aws::Http::HeaderValueCollection PutObjectRetentionRequest::GetRequestSpecificHe
   {
     ss << m_contentMD5;
     headers.emplace("content-md5",  ss.str());
-    ss.str("");
-  }
-
-  if(m_expectedBucketOwnerHasBeenSet)
-  {
-    ss << m_expectedBucketOwner;
-    headers.emplace("x-amz-expected-bucket-owner",  ss.str());
     ss.str("");
   }
 

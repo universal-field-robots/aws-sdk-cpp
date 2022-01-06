@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+  * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License").
+  * You may not use this file except in compliance with the License.
+  * A copy of the License is located at
+  *
+  *  http://aws.amazon.com/apache2.0
+  *
+  * or in the "license" file accompanying this file. This file is distributed
+  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  * express or implied. See the License for the specific language governing
+  * permissions and limitations under the License.
+  */
 
 
 #pragma once
@@ -22,26 +32,10 @@ namespace Aws
 {
     namespace Auth
     {
-        constexpr int REFRESH_THRESHOLD = 1000 * 60 * 5;
+        static int REFRESH_THRESHOLD = 1000 * 60 * 5;
 
-        /**
-         * Returns the full path of the config file.
-         */
         AWS_CORE_API Aws::String GetConfigProfileFilename(); //defaults to "config"
-
-        /**
-         * Returns the default profile name.
-         * The value is the first non-empty value of the following:
-         * 1. AWS_PROFILE environment variable
-         * 2. AWS_DEFAULT_PROFILE environment variable
-         * 3. The literal name "default"
-         */
         AWS_CORE_API Aws::String GetConfigProfileName(); //defaults to "default"
-
-        /*
-         * Fetches credentials by executing the process in the parameter
-         */
-        AWS_CORE_API AWSCredentials GetCredentialsFromProcess(const Aws::String& process);
 
         /**
           * Abstract class for retrieving AWS credentials. Create a derived class from this to allow
@@ -87,7 +81,7 @@ namespace Aws
             /**
              * Returns empty credentials object.
              */
-            inline AWSCredentials GetAWSCredentials() override { return AWSCredentials(); }
+            inline AWSCredentials GetAWSCredentials() override { return AWSCredentials("", ""); }
         };
 
         /**
@@ -102,14 +96,15 @@ namespace Aws
              * Initializes object from awsAccessKeyId, awsSecretAccessKey, and sessionToken parameters. sessionToken parameter is defaulted to empty.
              */
             inline SimpleAWSCredentialsProvider(const Aws::String& awsAccessKeyId, const Aws::String& awsSecretAccessKey, const Aws::String& sessionToken = "")
-                : m_credentials(awsAccessKeyId, awsSecretAccessKey, sessionToken)
+                : m_accessKeyId(awsAccessKeyId), m_secretAccessKey(awsSecretAccessKey), m_sessionToken(sessionToken)
             { }
 
             /**
             * Initializes object from credentials object. everything is copied.
             */
             inline SimpleAWSCredentialsProvider(const AWSCredentials& credentials)
-                : m_credentials(credentials)
+                : m_accessKeyId(credentials.GetAWSAccessKeyId()), m_secretAccessKey(credentials.GetAWSSecretKey()),
+                m_sessionToken(credentials.GetSessionToken())
             { }
 
             /**
@@ -117,11 +112,13 @@ namespace Aws
              */
             inline AWSCredentials GetAWSCredentials() override
             {
-                return m_credentials;
+                return AWSCredentials(m_accessKeyId, m_secretAccessKey, m_sessionToken);
             }
 
         private:
-            AWSCredentials m_credentials;
+            Aws::String m_accessKeyId;
+            Aws::String m_secretAccessKey;
+            Aws::String m_sessionToken;
         };
 
         /**
@@ -180,8 +177,8 @@ namespace Aws
         private:
 
             /**
-             * Checks to see if the refresh interval has expired and reparses the file if it has.
-             */
+            * Checks to see if the refresh interval has expired and reparses the file if it has.
+            */
             void RefreshIfExpired();
 
             Aws::String m_profileToUse;
@@ -268,6 +265,7 @@ namespace Aws
         private:
             std::shared_ptr<Aws::Internal::ECSCredentialsClient> m_ecsCredentialsClient;
             long m_loadFrequencyMs;
+            Aws::Utils::DateTime m_expirationDate;
             Aws::Auth::AWSCredentials m_credentials;
         };
 
@@ -279,7 +277,7 @@ namespace Aws
          * The default profile name to look up this configuration is "default", same as normal aws credentials configuration and other configurations.
          * The expected valid output of the command is a Json doc output to stdout:
          * {"Version": 1, "AccessKeyId": "AccessKey123", "SecretAccessKey": "SecretKey321", "SessionToken": "Token123", "Expiration": "1970-01-01T00:00:01Z"}
-         * The Version key specifies the version of the JSON payload and must be set to 1 for now (as an integer type).
+         * The Version key specifies the version of the JSON payload and must be set to 1 for now (as an integer type). 
          * If the Version key is bumped to 2, SDKs would support both versions of the returned payload.
          * Value of Expiration field should be an valid ISO8601 formatted date string as above example.
          * The expected error message of the command is a string to output to stderr.
@@ -310,7 +308,9 @@ namespace Aws
 
         private:
             Aws::String m_profileToUse;
+            Aws::Config::AWSConfigFileProfileConfigLoader m_configFileLoader;
             Aws::Auth::AWSCredentials m_credentials;
+            Aws::Utils::DateTime m_expire;
         };
     } // namespace Auth
 } // namespace Aws

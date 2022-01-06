@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License").
+  * You may not use this file except in compliance with the License.
+  * A copy of the License is located at
+  *
+  *  http://aws.amazon.com/apache2.0
+  *
+  * or in the "license" file accompanying this file. This file is distributed
+  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  * express or implied. See the License for the specific language governing
+  * permissions and limitations under the License.
+  */
 
 #pragma once
 
@@ -150,7 +160,7 @@ namespace Aws
 
             /**
              * Container for Xml Document as a whole. All nodes have a reference to their parent document. Any changes
-             * you make to the nodes will be reflected here.
+             * you make to the nodes will be reflected here. 
              */
             class AWS_CORE_API XmlDocument
             {
@@ -158,12 +168,8 @@ namespace Aws
                 /**
                  * move document memory
                  */
-                XmlDocument(const XmlDocument& other);
-                XmlDocument(XmlDocument&& doc);
-                XmlDocument();
-
-                XmlDocument& operator=(const XmlDocument& other);
-                XmlDocument& operator=(XmlDocument&& other);
+                XmlDocument(XmlDocument&& doc); 
+                XmlDocument(const XmlDocument& other) = delete;
 
                 ~XmlDocument();
 
@@ -181,7 +187,7 @@ namespace Aws
                  */
                 bool WasParseSuccessful() const;
                 /**
-                 * Returns the error message if the call to CreateFromXml* failed.
+                 * Returns the error message if the call to CreateFromXml* failed. 
                  */
                 Aws::String GetErrorMessage() const;
                 /**
@@ -198,7 +204,7 @@ namespace Aws
                 static XmlDocument CreateWithRootNode(const Aws::String&);
 
             private:
-                void InitDoc();
+                XmlDocument();
 
                 Aws::External::tinyxml2::XMLDocument* m_doc;
 
@@ -207,11 +213,10 @@ namespace Aws
                 //allow outcome call the default constructor to handle it's error case.
                 friend class Aws::Utils::Outcome<Aws::AmazonWebServiceResult<Aws::Utils::Xml::XmlDocument>, Aws::Client::AWSError<Aws::Client::CoreErrors>>;
                 friend class Aws::AmazonWebServiceResult<Aws::Utils::Xml::XmlDocument>;
-                template<typename T>
-                friend class Client::AWSError;
                 friend class Client::AWSXMLClient;
             };
 
         } // namespace Xml
     } // namespace Utils
 } // namespace Aws
+

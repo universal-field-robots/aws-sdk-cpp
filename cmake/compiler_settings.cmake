@@ -46,10 +46,6 @@ macro(set_gcc_flags)
     if(MINIMIZE_SIZE AND COMPILER_GCC)
         list(APPEND AWS_COMPILER_FLAGS "-s")
     endif()
-
-    if(NOT BUILD_SHARED_LIBS AND NOT ENABLE_VIRTUAL_OPERATIONS)
-        list(APPEND AWS_COMPILER_FLAGS "-ffunction-sections;-fdata-sections")
-    endif()
 endmacro()
 
 macro(set_gcc_warnings)
@@ -71,6 +67,9 @@ endmacro()
 
 macro(set_msvc_flags)
     if(MSVC)
+        # Put all runtime outputs, including DLLs, executables into one directory, so as to avoid copying DLLs.
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
+
         # Based on the FORCE_SHARED_CRT and BUILD_SHARED_LIBS options, make sure our compile/link flags bring in the right CRT library
         # modified from gtest's version; while only the else clause is actually necessary, do both for completeness/future-proofing
         foreach (var
@@ -87,8 +86,6 @@ macro(set_msvc_flags)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
         # some of the clients are exceeding the 16-bit code section limit when building x64 debug, so use /bigobj when we build
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
-        # do not assume charset
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
 
         if(NOT ENABLE_RTTI)
             string(REGEX REPLACE "/GR " " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -97,7 +94,7 @@ macro(set_msvc_flags)
 
         # special windows build options:
         #   debug info: pdbs with dlls, embedded in static libs
-        #   release optimizations to purely focus on size, override debug info settings as necessary
+        #   release optimisations to purely focus on size, override debug info settings as necessary
         if(BUILD_SHARED_LIBS)
             set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
             set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")

@@ -1,7 +1,17 @@
-﻿/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+﻿/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 #include <aws/s3/model/PutBucketPolicyRequest.h>
 #include <aws/core/AmazonWebServiceResult.h>
@@ -21,7 +31,6 @@ PutBucketPolicyRequest::PutBucketPolicyRequest() :
     m_contentMD5HasBeenSet(false),
     m_confirmRemoveSelfBucketAccess(false),
     m_confirmRemoveSelfBucketAccessHasBeenSet(false),
-    m_expectedBucketOwnerHasBeenSet(false),
     m_customizedAccessLogTagHasBeenSet(false)
 {
 }
@@ -48,7 +57,6 @@ void PutBucketPolicyRequest::AddQueryStringParameters(URI& uri) const
         }
     }
 }
-
 Aws::Http::HeaderValueCollection PutBucketPolicyRequest::GetRequestSpecificHeaders() const
 {
   Aws::Http::HeaderValueCollection headers;
@@ -62,15 +70,8 @@ Aws::Http::HeaderValueCollection PutBucketPolicyRequest::GetRequestSpecificHeade
 
   if(m_confirmRemoveSelfBucketAccessHasBeenSet)
   {
-    ss << std::boolalpha << m_confirmRemoveSelfBucketAccess;
-    headers.emplace("x-amz-confirm-remove-self-bucket-access", ss.str());
-    ss.str("");
-  }
-
-  if(m_expectedBucketOwnerHasBeenSet)
-  {
-    ss << m_expectedBucketOwner;
-    headers.emplace("x-amz-expected-bucket-owner",  ss.str());
+    ss << m_confirmRemoveSelfBucketAccess;
+    headers.emplace("x-amz-confirm-remove-self-bucket-access",  ss.str());
     ss.str("");
   }
 

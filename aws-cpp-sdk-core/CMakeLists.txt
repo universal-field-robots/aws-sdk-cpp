@@ -2,7 +2,6 @@ add_project(aws-cpp-sdk-core "Core http and utility library for the AWS C++ SDK"
 
 if(VERSION_STRING)
     set(AWSSDK_VERSION_STRING ${VERSION_STRING})
-
     message(STATUS "Updating version info to ${VERSION_STRING}")
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/include/aws/core/VersionConfig.h})
         FILE(REMOVE ${CMAKE_CURRENT_SOURCE_DIR}/include/aws/core/VersionConfig.h})
@@ -10,14 +9,8 @@ if(VERSION_STRING)
     string(REPLACE "." ";" VERSION_LIST ${VERSION_STRING})
     list(GET VERSION_LIST 0 AWSSDK_VERSION_MAJOR)
     list(GET VERSION_LIST 1 AWSSDK_VERSION_MINOR)
-    list(GET VERSION_LIST 2 AWSSDK_VERSION_FULLPATCH)
-    string(REPLACE "-" ";" AWSSDK_VERSION_PRERELEASE ${AWSSDK_VERSION_FULLPATCH})
-    list(GET AWSSDK_VERSION_PRERELEASE 0 AWSSDK_VERSION_PATCH)
-    list(GET AWSSDK_VERSION_PRERELEASE -1 AWSSDK_VERSION_PRERELEASE)
+    list(GET VERSION_LIST 2 AWSSDK_VERSION_PATCH)
 
-    set(AWSSDK_VERSION_MAJOR ${AWSSDK_VERSION_MAJOR})
-    set(AWSSDK_VERSION_MINOR ${AWSSDK_VERSION_MINOR})
-    set(AWSSDK_VERSION_PATCH ${AWSSDK_VERSION_PATCH})
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/include/aws/core/VersionConfig.h.in"
         "${CMAKE_CURRENT_SOURCE_DIR}/include/aws/core/VersionConfig.h")
@@ -36,7 +29,7 @@ else()
     message(STATUS "Custom memory management disabled")
 endif()
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/aws/core/SDKConfig.h.in"
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/aws/core/SDKConfig.h.in" 
                "${CMAKE_CURRENT_SOURCE_DIR}/include/aws/core/SDKConfig.h")
 
 # Pretty sure we can use a regex here...
@@ -90,34 +83,26 @@ file(GLOB UTILS_MEMORY_STL_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/memo
 file(GLOB UTILS_STREAM_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/stream/*.cpp")
 file(GLOB UTILS_CRYPTO_FACTORY_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/crypto/factory/*.cpp")
 
-include(CheckCSourceCompiles)
 include(CheckCXXSourceCompiles)
 include(CheckCSourceRuns)
 include(CheckCXXSourceRuns)
-
 
 # http client implementations
 if(ENABLE_CURL_CLIENT)
     file(GLOB HTTP_CURL_CLIENT_HEADERS "include/aws/core/http/curl/*.h")
     file(GLOB HTTP_CURL_CLIENT_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/source/http/curl/*.cpp")
     set(CMAKE_REQUIRED_LIBRARIES ${CURL_LIBRARIES})
-    set(CHECK_CURL_HAS_H2 "
+    check_c_source_runs("
     #include <curl/curl.h>
     int main() {
     CURL* handle = curl_easy_init();
-    return curl_easy_setopt(handle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0); }")
-    set(CHECK_CURL_HAS_TLS_PROXY "
+    return curl_easy_setopt(handle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0); }" CURL_HAS_H2)
+    check_c_source_runs("
     #include <curl/curl.h>
     int main() {
     CURL* handle = curl_easy_init();
-    return curl_easy_setopt(handle, CURLOPT_PROXY_SSLCERT, \"client.pem\"); }")
-    if (CMAKE_CROSSCOMPILING)
-        check_c_source_compiles("${CHECK_CURL_HAS_H2}" CURL_HAS_H2)
-        check_c_source_compiles("${CHECK_CURL_HAS_TLS_PROXY}" CURL_HAS_TLS_PROXY)
-    else()
-        check_c_source_runs("${CHECK_CURL_HAS_H2}" CURL_HAS_H2)
-        check_c_source_runs("${CHECK_CURL_HAS_TLS_PROXY}" CURL_HAS_TLS_PROXY)
-    endif()
+    return curl_easy_setopt(handle, CURLOPT_PROXY_SSLCERT, \"client.pem\"); }" CURL_HAS_TLS_PROXY)
+    unset(CMAKE_REQUIRED_LIBRARIES)
 elseif(ENABLE_WINDOWS_CLIENT)
     # NOTE: HTTP/2 is not supported when using IXML_HTTP_REQUEST_2
     if(USE_IXML_HTTP_REQUEST_2)
@@ -141,7 +126,7 @@ elseif(ENABLE_WINDOWS_CLIENT)
         file(GLOB HTTP_WINDOWS_CLIENT_HEADERS "include/aws/core/http/windows/Win*.h")
         file(GLOB HTTP_WINDOWS_CLIENT_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/source/http/windows/Win*.cpp")
 
-        # Starting with Windows 10, version 1507, WinINet supports HTTP2.
+        # Strating with Windows 10, version 1507, WinINet supports HTTP2.
         # https://docs.microsoft.com/en-us/windows/desktop/WinInet/option-flags#INTERNET_OPTION_ENABLE_HTTP_PROTOCOL
         # Starting with Windows 10, version 1607, WinHttp supports HTTP2.
         # https://docs.microsoft.com/en-us/windows/desktop/WinHttp/option-flags#WINHTTP_OPTION_ENABLE_HTTP_PROTOCOL
@@ -176,7 +161,7 @@ elseif(ENABLE_WINDOWS_CLIENT)
             nullptr /*lpszProxyBypass*/,
             0 /*dwFlags*/);
         DWORD http2 = HTTP_PROTOCOL_FLAG_HTTP2;
-        if (InternetSetOptionA(handle, INTERNET_OPTION_ENABLE_HTTP_PROTOCOL, &http2, sizeof(http2)))
+        if (InternetSetOptionA(handle, INTERNET_OPTION_ENABLE_HTTP_PROTOCOL, &http2, sizeof(http2))) 
         {
             return 0;
         }
@@ -205,17 +190,22 @@ elseif(ENABLE_OPENSSL_ENCRYPTION)
 elseif(ENABLE_COMMONCRYPTO_ENCRYPTION)
     file(GLOB UTILS_CRYPTO_COMMONCRYPTO_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/aws/core/utils/crypto/commoncrypto/*.h")
     file(GLOB UTILS_CRYPTO_COMMONCRYPTO_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/source/utils/crypto/commoncrypto/*.cpp")
-endif()
+endif()   
 
 
 file(GLOB AWS_NATIVE_SDK_COMMON_SRC
+    ${AWS_SOURCE}
     ${AWS_TINYXML2_SOURCE}
     ${AWS_AUTH_SOURCE}
     ${AWS_CLIENT_SOURCE}
+    ${AWS_INTERNAL_SOURCE}
     ${HTTP_STANDARD_SOURCE}
     ${HTTP_CLIENT_SOURCE}
     ${CONFIG_SOURCE}
+    ${MONITORING_SOURCE}
     ${UTILS_BASE64_SOURCE}
+    ${UTILS_CRYPTO_SOURCE}
+    ${UTILS_JSON_SOURCE}
     ${UTILS_THREADING_SOURCE}
     ${UTILS_RETRY_SOURCE}
     ${UTILS_XML_SOURCE}
@@ -259,7 +249,7 @@ file(GLOB AWS_NATIVE_SDK_COMMON_HEADERS
   ${UTILS_CRYPTO_BCRYPT_HEADERS}
   ${UTILS_CRYPTO_OPENSSL_HEADERS}
   ${UTILS_CRYPTO_COMMONCRYPTO_HEADERS}
-)
+) 
 
 # misc platform-specific, not related to features (encryption/http clients)
 if(PLATFORM_WINDOWS)
@@ -267,7 +257,7 @@ if(PLATFORM_WINDOWS)
   #add your windows specific impl stuff here.
   file(GLOB PLATFORM_WINDOWS_SOURCE = "${CMAKE_CURRENT_SOURCE_DIR}/source/platform/windows/*.cpp")
 
-  file(GLOB AWS_NATIVE_SDK_WINDOWS_SRC
+  file(GLOB AWS_NATIVE_SDK_WINDOWS_SRC 
     ${PLATFORM_WINDOWS_SOURCE}
   )
 elseif(PLATFORM_LINUX OR PLATFORM_APPLE)
@@ -276,14 +266,14 @@ elseif(PLATFORM_LINUX OR PLATFORM_APPLE)
 
   file(GLOB PLATFORM_LINUX_SHARED_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/source/platform/linux-shared/*.cpp")
 
-  file(GLOB AWS_NATIVE_SDK_LINUX_SHARED_SRC
+  file(GLOB AWS_NATIVE_SDK_LINUX_SHARED_SRC 
      ${PLATFORM_LINUX_SHARED_SOURCE}
    )
 elseif(PLATFORM_ANDROID)
   file(GLOB UTILS_LOGGING_ANDROID_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/aws/core/utils/logging/android/*.h")
   file(GLOB PLATFORM_ANDROID_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/source/platform/android/*.cpp")
 
-  file(GLOB AWS_NATIVE_SDK_ANDROID_SRC
+  file(GLOB AWS_NATIVE_SDK_ANDROID_SRC 
      ${PLATFORM_ANDROID_SOURCE}
   )
   file(GLOB AWS_NATIVE_SDK_ANDROID_HEADERS
@@ -293,25 +283,18 @@ elseif(PLATFORM_CUSTOM)
   gather_custom_core_source(AWS_NATIVE_SDK_CUSTOM_SRC)
 endif()
 
-# TODO: Could have different non unity source lists for different platforms.
-# One reason we have this list is to resolve Windows pre-defined type conflicts with those in C++ SDK.
 file(GLOB AWS_NATIVE_SDK_NON_UNITY_SRC
-    ${AWS_SOURCE}
     ${HTTP_WINDOWS_CLIENT_SOURCE}
     ${HTTP_CURL_CLIENT_SOURCE}
-    ${AWS_INTERNAL_SOURCE}
     ${UTILS_CRYPTO_BCRYPT_SOURCE}
     ${AWS_NATIVE_SDK_WINDOWS_SRC}
-    ${MONITORING_SOURCE}
     ${UTILS_CRYPTO_FACTORY_SOURCE}
-    ${UTILS_JSON_SOURCE}
     ${UTILS_EVENT_SOURCE}
     ${UTILS_SOURCE}
     ${NET_SOURCE}
     ${HTTP_SOURCE}
     ${CJSON_SOURCE}
     ${AWS_NATIVE_SDK_CUSTOM_SRC}
-    ${UTILS_CRYPTO_SOURCE}
 )
 
 file(GLOB AWS_NATIVE_SDK_UNITY_SRC
@@ -475,10 +458,24 @@ if(BUILD_OPENSSL)
     target_include_directories(${PROJECT_NAME} PRIVATE "${OPENSSL_INCLUDE_DIR}")
 endif()
 
+if(BUILD_ZLIB)
+    target_include_directories(${PROJECT_NAME} PRIVATE "${ZLIB_INCLUDE_DIR}")
+endif()
+
+
 set(PKG_CONFIG_LIB "-l${PROJECT_NAME}")
 
 if (ENABLE_CURL_LOGGING)
     target_compile_definitions(${PROJECT_NAME} PRIVATE "ENABLE_CURL_LOGGING")
+endif()
+
+
+if(ENABLE_CURL_CLIENT AND BUILD_CURL)
+    add_dependencies(${PROJECT_NAME} CURL)
+endif()
+
+if(ENABLE_OPENSSL_ENCRYPTION AND BUILD_OPENSSL)
+    add_dependencies(${PROJECT_NAME} OPENSSL)
 endif()
 
 if(PLATFORM_CUSTOM)
@@ -501,9 +498,10 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PLATFORM_DEP_LIBS} ${CLIENT_LIBS} ${CRYPTO_LIBS} ${AWS_SDK_ADDITIONAL_LIBRARIES})
 
-aws_use_package(aws-crt-cpp)
+find_package(aws-c-event-stream REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${DEP_AWS_LIBS})
+target_link_libraries(${PROJECT_NAME} PUBLIC AWS::aws-c-event-stream)
+
 
 if(USE_WINDOWS_DLL_SEMANTICS)
     target_compile_definitions(${PROJECT_NAME} PUBLIC "USE_WINDOWS_DLL_SEMANTICS")
@@ -536,10 +534,6 @@ else()
 endif()
 
 if(SIMPLE_INSTALL)
-    # These libs are needed by aws-cpp-sdk-core only.
-    set(ALL_DEP_LIBS ${AWS_COMMON_RUNTIME_LIBS} ${PLATFORM_DEP_LIBS_ABSTRACT_NAME} ${CLIENT_LIBS_ABSTRACT_NAME} ${CRYPTO_LIBS_ABSTRACT_NAME})
-    generate_pkgconfig_link_flags(ALL_DEP_LIBS ALL_DEP_LIBS_LINK_FLAGS)
-    set(ALL_DEP_LIBS_LINK_FLAGS "${ALL_DEP_LIBS_LINK_FLAGS}")
     configure_file("${AWS_NATIVE_SDK_ROOT}/toolchains/pkg-config.pc.in" "${PROJECT_NAME}.pc" @ONLY)
 
     if(BUILD_SHARED_LIBS)

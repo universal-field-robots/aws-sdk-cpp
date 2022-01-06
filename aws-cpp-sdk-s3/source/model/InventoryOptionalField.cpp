@@ -1,7 +1,17 @@
-﻿/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+﻿/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 #include <aws/s3/model/InventoryOptionalField.h>
 #include <aws/core/utils/HashingUtils.h>
@@ -30,8 +40,6 @@ namespace Aws
         static const int ObjectLockRetainUntilDate_HASH = HashingUtils::HashString("ObjectLockRetainUntilDate");
         static const int ObjectLockMode_HASH = HashingUtils::HashString("ObjectLockMode");
         static const int ObjectLockLegalHoldStatus_HASH = HashingUtils::HashString("ObjectLockLegalHoldStatus");
-        static const int IntelligentTieringAccessTier_HASH = HashingUtils::HashString("IntelligentTieringAccessTier");
-        static const int BucketKeyStatus_HASH = HashingUtils::HashString("BucketKeyStatus");
 
 
         InventoryOptionalField GetInventoryOptionalFieldForName(const Aws::String& name)
@@ -77,14 +85,6 @@ namespace Aws
           {
             return InventoryOptionalField::ObjectLockLegalHoldStatus;
           }
-          else if (hashCode == IntelligentTieringAccessTier_HASH)
-          {
-            return InventoryOptionalField::IntelligentTieringAccessTier;
-          }
-          else if (hashCode == BucketKeyStatus_HASH)
-          {
-            return InventoryOptionalField::BucketKeyStatus;
-          }
           EnumParseOverflowContainer* overflowContainer = Aws::GetEnumOverflowContainer();
           if(overflowContainer)
           {
@@ -119,10 +119,6 @@ namespace Aws
             return "ObjectLockMode";
           case InventoryOptionalField::ObjectLockLegalHoldStatus:
             return "ObjectLockLegalHoldStatus";
-          case InventoryOptionalField::IntelligentTieringAccessTier:
-            return "IntelligentTieringAccessTier";
-          case InventoryOptionalField::BucketKeyStatus:
-            return "BucketKeyStatus";
           default:
             EnumParseOverflowContainer* overflowContainer = Aws::GetEnumOverflowContainer();
             if(overflowContainer)

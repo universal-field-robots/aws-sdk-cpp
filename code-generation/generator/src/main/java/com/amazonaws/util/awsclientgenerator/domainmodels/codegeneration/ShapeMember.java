@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 package com.amazonaws.util.awsclientgenerator.domainmodels.codegeneration;
 
@@ -13,9 +23,9 @@ public class ShapeMember {
     boolean idempotencyToken;
     //This field has be set to false for all shape members for serialization purposes to do HasBeenSet.
     //Right now we need the real value of this field to do parameter validation before sending out the request.
-    //It's preferred to use this value but it appears in multiple places. Change current value 'false' to it's 'real value' is risky.
-    //It's safer to copy it's value to another variable (now isValidationNeeded) and validate based on that.
-    boolean isRequired;
+    //It's prefered to use this value but it appears in multiple places. Change current value 'false' to it's 'real value' is risky.
+    //It's safer to copy it's value to another varaible (now isValidationNeeded) and validate based on that.
+    boolean isRequired; 
     boolean isValidationNeeded;
     boolean streaming;
     String documentation;
@@ -26,7 +36,6 @@ public class ShapeMember {
     boolean isFlattened;
     boolean isCustomizedQuery;
     boolean isEventPayload;
-    boolean isEventHeader;
     boolean hostLabel;
     boolean endpointDiscoveryId;
     boolean xmlAttribute;

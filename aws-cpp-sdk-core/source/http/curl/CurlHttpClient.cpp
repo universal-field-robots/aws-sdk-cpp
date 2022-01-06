@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+  * 
+  * Licensed under the Apache License, Version 2.0 (the "License").
+  * You may not use this file except in compliance with the License.
+  * A copy of the License is located at
+  * 
+  *  http://aws.amazon.com/apache2.0
+  * 
+  * or in the "license" file accompanying this file. This file is distributed
+  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  * express or implied. See the License for the specific language governing
+  * permissions and limitations under the License.
+  */
 
 #include <aws/core/http/curl/CurlHttpClient.h>
 #include <aws/core/http/HttpRequest.h>
@@ -123,8 +133,8 @@ static char* strdup_callback(const char* str)
 struct CurlWriteCallbackContext
 {
     CurlWriteCallbackContext(const CurlHttpClient* client,
-                             HttpRequest* request,
-                             HttpResponse* response,
+                             HttpRequest* request, 
+                             HttpResponse* response, 
                              Aws::Utils::RateLimits::RateLimiterInterface* rateLimiter) :
         m_client(client),
         m_request(request),
@@ -142,15 +152,13 @@ struct CurlWriteCallbackContext
 
 struct CurlReadCallbackContext
 {
-    CurlReadCallbackContext(const CurlHttpClient* client, CURL* curlHandle, HttpRequest* request, Aws::Utils::RateLimits::RateLimiterInterface* limiter) :
+    CurlReadCallbackContext(const CurlHttpClient* client, HttpRequest* request, Aws::Utils::RateLimits::RateLimiterInterface* limiter) :
         m_client(client),
-        m_curlHandle(curlHandle),
         m_rateLimiter(limiter),
         m_request(request)
     {}
 
     const CurlHttpClient* m_client;
-    CURL* m_curlHandle;
     Aws::Utils::RateLimits::RateLimiterInterface* m_rateLimiter;
     HttpRequest* m_request;
 };
@@ -177,10 +185,6 @@ static size_t WriteData(char* ptr, size_t size, size_t nmemb, void* userdata)
         }
 
         response->GetResponseBody().write(ptr, static_cast<std::streamsize>(sizeToWrite));
-        if (context->m_request->IsEventStreamRequest())
-        {
-            response->GetResponseBody().flush();
-        }
         auto& receivedHandler = context->m_request->GetDataReceivedEventHandler();
         if (receivedHandler)
         {
@@ -198,9 +202,8 @@ static size_t WriteHeader(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
     if (ptr)
     {
-        CurlWriteCallbackContext* context = reinterpret_cast<CurlWriteCallbackContext*>(userdata);
         AWS_LOGSTREAM_TRACE(CURL_HTTP_CLIENT_TAG, ptr);
-        HttpResponse* response = context->m_response;
+        HttpResponse* response = (HttpResponse*) userdata;
         Aws::String headerLine(ptr);
         Aws::Vector<Aws::String> keyValuePair = StringUtils::Split(headerLine, ':', 2);
 
@@ -235,17 +238,7 @@ static size_t ReadBody(char* ptr, size_t size, size_t nmemb, void* userdata)
     const size_t amountToRead = size * nmemb;
     if (ioStream != nullptr && amountToRead > 0)
     {
-        if (request->IsEventStreamRequest())
-        {
-            if (ioStream->readsome(ptr, amountToRead) == 0 && !ioStream->eof())
-            {
-                return CURL_READFUNC_PAUSE;
-            }
-        }
-        else
-        {
-            ioStream->read(ptr, amountToRead);
-        }
+        ioStream->read(ptr, amountToRead);
         size_t amountRead = static_cast<size_t>(ioStream->gcount());
         auto& sentHandler = request->GetDataSentEventHandler();
         if (sentHandler)
@@ -305,43 +298,16 @@ static size_t SeekBody(void* userdata, curl_off_t offset, int origin)
 
     return CURL_SEEKFUNC_OK;
 }
-#if LIBCURL_VERSION_NUM >= 0x072000 // 7.32.0
-static int CurlProgressCallback(void *userdata, curl_off_t, curl_off_t, curl_off_t, curl_off_t)
-#else
-static int CurlProgressCallback(void *userdata, double, double, double, double)
-#endif
+
+void SetOptCodeForHttpMethod(CURL* requestHandle, const HttpRequest& request)
 {
-    CurlReadCallbackContext* context = reinterpret_cast<CurlReadCallbackContext*>(userdata);
-
-    const std::shared_ptr<Aws::IOStream>& ioStream = context->m_request->GetContentBody();
-    if (ioStream->eof())
-    {
-        curl_easy_pause(context->m_curlHandle, CURLPAUSE_CONT);
-        return 0;
-    }
-    char output[1];
-    if (ioStream->readsome(output, 1) > 0)
-    {
-        ioStream->unget();
-        if (!ioStream->good())
-        {
-            AWS_LOGSTREAM_WARN(CURL_HTTP_CLIENT_TAG, "Input stream failed to perform unget().");
-        }
-        curl_easy_pause(context->m_curlHandle, CURLPAUSE_CONT);
-    }
-
-    return 0;
-}
-
-void SetOptCodeForHttpMethod(CURL* requestHandle, const std::shared_ptr<HttpRequest>& request)
-{
-    switch (request->GetMethod())
+    switch (request.GetMethod())
     {
         case HttpMethod::HTTP_GET:
             curl_easy_setopt(requestHandle, CURLOPT_HTTPGET, 1L);
             break;
         case HttpMethod::HTTP_POST:
-            if (request->HasHeader(Aws::Http::CONTENT_LENGTH_HEADER) && request->GetHeaderValue(Aws::Http::CONTENT_LENGTH_HEADER) == "0")
+            if (request.HasHeader(Aws::Http::CONTENT_LENGTH_HEADER) && request.GetHeaderValue(Aws::Http::CONTENT_LENGTH_HEADER) == "0")
             {
                 curl_easy_setopt(requestHandle, CURLOPT_CUSTOMREQUEST, "POST");
             }
@@ -351,8 +317,8 @@ void SetOptCodeForHttpMethod(CURL* requestHandle, const std::shared_ptr<HttpRequ
             }
             break;
         case HttpMethod::HTTP_PUT:
-            if ((!request->HasHeader(Aws::Http::CONTENT_LENGTH_HEADER) || request->GetHeaderValue(Aws::Http::CONTENT_LENGTH_HEADER) == "0") &&
-                 !request->HasHeader(Aws::Http::TRANSFER_ENCODING_HEADER))
+            if ((!request.HasHeader(Aws::Http::CONTENT_LENGTH_HEADER) || request.GetHeaderValue(Aws::Http::CONTENT_LENGTH_HEADER) == "0") &&
+                 !request.HasHeader(Aws::Http::TRANSFER_ENCODING_HEADER))
             {
                 curl_easy_setopt(requestHandle, CURLOPT_CUSTOMREQUEST, "PUT");
             }
@@ -366,8 +332,8 @@ void SetOptCodeForHttpMethod(CURL* requestHandle, const std::shared_ptr<HttpRequ
             curl_easy_setopt(requestHandle, CURLOPT_NOBODY, 1L);
             break;
         case HttpMethod::HTTP_PATCH:
-            if ((!request->HasHeader(Aws::Http::CONTENT_LENGTH_HEADER)|| request->GetHeaderValue(Aws::Http::CONTENT_LENGTH_HEADER) == "0") &&
-                 !request->HasHeader(Aws::Http::TRANSFER_ENCODING_HEADER))
+            if ((!request.HasHeader(Aws::Http::CONTENT_LENGTH_HEADER)|| request.GetHeaderValue(Aws::Http::CONTENT_LENGTH_HEADER) == "0") &&
+                 !request.HasHeader(Aws::Http::TRANSFER_ENCODING_HEADER))
             {
                 curl_easy_setopt(requestHandle, CURLOPT_CUSTOMREQUEST, "PATCH");
             }
@@ -396,7 +362,7 @@ void CurlHttpClient::InitGlobalState()
     if (!isInit)
     {
         auto curlVersionData = curl_version_info(CURLVERSION_NOW);
-        AWS_LOGSTREAM_INFO(CURL_HTTP_CLIENT_TAG, "Initializing Curl library with version: " << curlVersionData->version
+        AWS_LOGSTREAM_INFO(CURL_HTTP_CLIENT_TAG, "Initializing Curl library with version: " << curlVersionData->version 
             << ", ssl version: " << curlVersionData->ssl_version);
         isInit = true;
 #ifdef AWS_CUSTOM_MEMORY_MANAGEMENT
@@ -463,7 +429,7 @@ int CurlDebugCallback(CURL *handle, curl_infotype type, char *data, size_t size,
 
 
 CurlHttpClient::CurlHttpClient(const ClientConfiguration& clientConfig) :
-    Base(),
+    Base(),   
     m_curlHandleContainer(clientConfig.maxConnections, clientConfig.httpRequestTimeoutMs, clientConfig.connectTimeoutMs, clientConfig.enableTcpKeepAlive,
                           clientConfig.tcpKeepAliveIntervalMs, clientConfig.requestTimeoutMs, clientConfig.lowSpeedLimit),
     m_isUsingProxy(!clientConfig.proxyHost.empty()), m_proxyUserName(clientConfig.proxyUserName),
@@ -472,49 +438,31 @@ CurlHttpClient::CurlHttpClient(const ClientConfiguration& clientConfig) :
     m_proxySSLKeyPath(clientConfig.proxySSLKeyPath), m_proxySSLKeyType(clientConfig.proxySSLKeyType),
     m_proxyKeyPasswd(clientConfig.proxySSLKeyPassword),
     m_proxyPort(clientConfig.proxyPort), m_verifySSL(clientConfig.verifySSL), m_caPath(clientConfig.caPath),
-    m_caFile(clientConfig.caFile),
-    m_disableExpectHeader(clientConfig.disableExpectHeader)
+    m_caFile(clientConfig.caFile), 
+    m_disableExpectHeader(clientConfig.disableExpectHeader),
+    m_allowRedirects(clientConfig.followRedirects)
 {
-    if (clientConfig.followRedirects == FollowRedirectsPolicy::NEVER ||
-       (clientConfig.followRedirects == FollowRedirectsPolicy::DEFAULT && clientConfig.region == Aws::Region::AWS_GLOBAL))
-    {
-        m_allowRedirects = false;
-    }
-    else
-    {
-        m_allowRedirects = true;
-    }
-    if(clientConfig.nonProxyHosts.GetLength() > 0)
-    {
-        Aws::StringStream ss;
-        ss << clientConfig.nonProxyHosts.GetItem(0);
-        for (auto i=1u; i < clientConfig.nonProxyHosts.GetLength(); i++)
-        {
-            ss << "," << clientConfig.nonProxyHosts.GetItem(i);
-        }
-        m_nonProxyHosts = ss.str();
-    }
 }
 
 
-std::shared_ptr<HttpResponse> CurlHttpClient::MakeRequest(const std::shared_ptr<HttpRequest>& request,
-    Aws::Utils::RateLimits::RateLimiterInterface* readLimiter,
-    Aws::Utils::RateLimits::RateLimiterInterface* writeLimiter) const
+void CurlHttpClient::MakeRequestInternal(HttpRequest& request, 
+        std::shared_ptr<StandardHttpResponse>& response,
+        Aws::Utils::RateLimits::RateLimiterInterface* readLimiter, 
+        Aws::Utils::RateLimits::RateLimiterInterface* writeLimiter) const
 {
-    URI uri = request->GetUri();
+    URI uri = request.GetUri();
     Aws::String url = uri.GetURIString();
-    std::shared_ptr<HttpResponse> response = Aws::MakeShared<StandardHttpResponse>(CURL_HTTP_CLIENT_TAG, request);
 
     AWS_LOGSTREAM_TRACE(CURL_HTTP_CLIENT_TAG, "Making request to " << url);
     struct curl_slist* headers = NULL;
 
     if (writeLimiter != nullptr)
     {
-        writeLimiter->ApplyAndPayForCost(request->GetSize());
+        writeLimiter->ApplyAndPayForCost(request.GetSize());
     }
 
     Aws::StringStream headerStream;
-    HeaderValueCollection requestHeaders = request->GetHeaders();
+    HeaderValueCollection requestHeaders = request.GetHeaders();
 
     AWS_LOGSTREAM_TRACE(CURL_HTTP_CLIENT_TAG, "Including headers:");
     for (auto& requestHeader : requestHeaders)
@@ -525,18 +473,18 @@ std::shared_ptr<HttpResponse> CurlHttpClient::MakeRequest(const std::shared_ptr<
         AWS_LOGSTREAM_TRACE(CURL_HTTP_CLIENT_TAG, headerString);
         headers = curl_slist_append(headers, headerString.c_str());
     }
-
-    if (!request->HasHeader(Http::TRANSFER_ENCODING_HEADER))
+    
+    if (!request.HasHeader(Http::TRANSFER_ENCODING_HEADER))
     {
         headers = curl_slist_append(headers, "transfer-encoding:");
     }
 
-    if (!request->HasHeader(Http::CONTENT_LENGTH_HEADER))
+    if (!request.HasHeader(Http::CONTENT_LENGTH_HEADER))
     {
         headers = curl_slist_append(headers, "content-length:");
     }
 
-    if (!request->HasHeader(Http::CONTENT_TYPE_HEADER))
+    if (!request.HasHeader(Http::CONTENT_TYPE_HEADER))
     {
         headers = curl_slist_append(headers, "content-type:");
     }
@@ -558,8 +506,8 @@ std::shared_ptr<HttpResponse> CurlHttpClient::MakeRequest(const std::shared_ptr<
             curl_easy_setopt(connectionHandle, CURLOPT_HTTPHEADER, headers);
         }
 
-        CurlWriteCallbackContext writeContext(this, request.get(), response.get(), readLimiter);
-        CurlReadCallbackContext readContext(this, connectionHandle, request.get(), writeLimiter);
+        CurlWriteCallbackContext writeContext(this, &request, response.get(), readLimiter);
+        CurlReadCallbackContext readContext(this, &request, writeLimiter);
 
         SetOptCodeForHttpMethod(connectionHandle, request);
 
@@ -567,7 +515,7 @@ std::shared_ptr<HttpResponse> CurlHttpClient::MakeRequest(const std::shared_ptr<
         curl_easy_setopt(connectionHandle, CURLOPT_WRITEFUNCTION, WriteData);
         curl_easy_setopt(connectionHandle, CURLOPT_WRITEDATA, &writeContext);
         curl_easy_setopt(connectionHandle, CURLOPT_HEADERFUNCTION, WriteHeader);
-        curl_easy_setopt(connectionHandle, CURLOPT_HEADERDATA, &writeContext);
+        curl_easy_setopt(connectionHandle, CURLOPT_HEADERDATA, response.get());
 
         //we only want to override the default path if someone has explicitly told us to.
         if(!m_caPath.empty())
@@ -625,7 +573,6 @@ std::shared_ptr<HttpResponse> CurlHttpClient::MakeRequest(const std::shared_ptr<
                 curl_easy_setopt(connectionHandle, CURLOPT_PROXYUSERNAME, m_proxyUserName.c_str());
                 curl_easy_setopt(connectionHandle, CURLOPT_PROXYPASSWORD, m_proxyPassword.c_str());
             }
-            curl_easy_setopt(connectionHandle, CURLOPT_NOPROXY, m_nonProxyHosts.c_str());
 #ifdef CURL_HAS_TLS_PROXY
             if (!m_proxySSLCertPath.empty())
             {
@@ -654,42 +601,25 @@ std::shared_ptr<HttpResponse> CurlHttpClient::MakeRequest(const std::shared_ptr<
             curl_easy_setopt(connectionHandle, CURLOPT_PROXY, "");
         }
 
-        if (request->GetContentBody())
+        if (request.GetContentBody())
         {
             curl_easy_setopt(connectionHandle, CURLOPT_READFUNCTION, ReadBody);
             curl_easy_setopt(connectionHandle, CURLOPT_READDATA, &readContext);
             curl_easy_setopt(connectionHandle, CURLOPT_SEEKFUNCTION, SeekBody);
             curl_easy_setopt(connectionHandle, CURLOPT_SEEKDATA, &readContext);
-            if (request->IsEventStreamRequest())
-            {
-                curl_easy_setopt(connectionHandle, CURLOPT_NOPROGRESS, 0L);
-#if LIBCURL_VERSION_NUM >= 0x072000 // 7.32.0
-                curl_easy_setopt(connectionHandle, CURLOPT_XFERINFOFUNCTION, CurlProgressCallback);
-                curl_easy_setopt(connectionHandle, CURLOPT_XFERINFODATA, &readContext);
-#else
-                curl_easy_setopt(connectionHandle, CURLOPT_PROGRESSFUNCTION, CurlProgressCallback);
-                curl_easy_setopt(connectionHandle, CURLOPT_PROGRESSDATA, &readContext);
-#endif
-            }
         }
-
-        OverrideOptionsOnConnectionHandle(connectionHandle);
         Aws::Utils::DateTime startTransmissionTime = Aws::Utils::DateTime::Now();
         CURLcode curlResponseCode = curl_easy_perform(connectionHandle);
-        bool shouldContinueRequest = ContinueRequest(*request);
+        bool shouldContinueRequest = ContinueRequest(request);
         if (curlResponseCode != CURLE_OK && shouldContinueRequest)
         {
-            response->SetClientErrorType(CoreErrors::NETWORK_CONNECTION);
-            Aws::StringStream ss;
-            ss << "curlCode: " << curlResponseCode << ", " << curl_easy_strerror(curlResponseCode);
-            response->SetClientErrorMessage(ss.str());
+            response = nullptr;
             AWS_LOGSTREAM_ERROR(CURL_HTTP_CLIENT_TAG, "Curl returned error code " << curlResponseCode
                     << " - " << curl_easy_strerror(curlResponseCode));
         }
         else if(!shouldContinueRequest)
         {
-            response->SetClientErrorType(CoreErrors::USER_CANCELLED);
-            response->SetClientErrorMessage("Request cancelled by user's continuation handler");
+            response->SetResponseCode(HttpResponseCode::REQUEST_NOT_MADE);
         }
         else
         {
@@ -706,7 +636,7 @@ std::shared_ptr<HttpResponse> CurlHttpClient::MakeRequest(const std::shared_ptr<
                 AWS_LOGSTREAM_DEBUG(CURL_HTTP_CLIENT_TAG, "Returned content type " << contentType);
             }
 
-            if (request->GetMethod() != HttpMethod::HTTP_HEAD &&
+            if (request.GetMethod() != HttpMethod::HTTP_HEAD &&
                 writeContext.m_client->IsRequestProcessingEnabled() &&
                 response->HasHeader(Aws::Http::CONTENT_LENGTH_HEADER))
             {
@@ -716,8 +646,7 @@ std::shared_ptr<HttpResponse> CurlHttpClient::MakeRequest(const std::shared_ptr<
                 AWS_LOGSTREAM_TRACE(CURL_HTTP_CLIENT_TAG, "Response body length: " << numBytesResponseReceived);
                 if (StringUtils::ConvertToInt64(contentLength.c_str()) != numBytesResponseReceived)
                 {
-                    response->SetClientErrorType(CoreErrors::NETWORK_CONNECTION);
-                    response->SetClientErrorMessage("Response body length doesn't match the content-length header.");
+                    response = nullptr;
                     AWS_LOGSTREAM_ERROR(CURL_HTTP_CLIENT_TAG, "Response body length doesn't match the content-length header.");
                 }
             }
@@ -729,44 +658,57 @@ std::shared_ptr<HttpResponse> CurlHttpClient::MakeRequest(const std::shared_ptr<
         CURLcode ret = curl_easy_getinfo(connectionHandle, CURLINFO_NAMELOOKUP_TIME, &timep); // DNS Resolve Latency, seconds.
         if (ret == CURLE_OK)
         {
-            request->AddRequestMetric(GetHttpClientMetricNameByType(HttpClientMetricsType::DnsLatency), static_cast<int64_t>(timep * 1000));// to milliseconds
+            request.AddRequestMetric(GetHttpClientMetricNameByType(HttpClientMetricsType::DnsLatency), static_cast<int64_t>(timep * 1000));// to milliseconds
         }
 
-        ret = curl_easy_getinfo(connectionHandle, CURLINFO_STARTTRANSFER_TIME, &timep); // Connect Latency
+        ret = curl_easy_getinfo(connectionHandle, CURLINFO_STARTTRANSFER_TIME, &timep); // Connect Latency 
         if (ret == CURLE_OK)
         {
-            request->AddRequestMetric(GetHttpClientMetricNameByType(HttpClientMetricsType::ConnectLatency), static_cast<int64_t>(timep * 1000));
+            request.AddRequestMetric(GetHttpClientMetricNameByType(HttpClientMetricsType::ConnectLatency), static_cast<int64_t>(timep * 1000));
         }
 
         ret = curl_easy_getinfo(connectionHandle, CURLINFO_APPCONNECT_TIME, &timep); // Ssl Latency
         if (ret == CURLE_OK)
         {
-            request->AddRequestMetric(GetHttpClientMetricNameByType(HttpClientMetricsType::SslLatency), static_cast<int64_t>(timep * 1000));
+            request.AddRequestMetric(GetHttpClientMetricNameByType(HttpClientMetricsType::SslLatency), static_cast<int64_t>(timep * 1000));
         }
 
         const char* ip = nullptr;
         auto curlGetInfoResult = curl_easy_getinfo(connectionHandle, CURLINFO_PRIMARY_IP, &ip); // Get the IP address of the remote endpoint
         if (curlGetInfoResult == CURLE_OK && ip)
         {
-            request->SetResolvedRemoteHost(ip);
+            request.SetResolvedRemoteHost(ip);
         }
-        if (curlResponseCode != CURLE_OK)
-        {
-            m_curlHandleContainer.DestroyCurlHandle(connectionHandle);
-        }
-        else
-        {
-            m_curlHandleContainer.ReleaseCurlHandle(connectionHandle);
-        }
+
+        m_curlHandleContainer.ReleaseCurlHandle(connectionHandle);
         //go ahead and flush the response body stream
-        response->GetResponseBody().flush();
-        request->AddRequestMetric(GetHttpClientMetricNameByType(HttpClientMetricsType::RequestLatency), (DateTime::Now() - startTransmissionTime).count());
+        if(response)
+        {
+            response->GetResponseBody().flush();
+        }
+        request.AddRequestMetric(GetHttpClientMetricNameByType(HttpClientMetricsType::RequestLatency), (DateTime::Now() - startTransmissionTime).count());
     }
 
     if (headers)
     {
         curl_slist_free_all(headers);
     }
+}
 
+std::shared_ptr<HttpResponse> CurlHttpClient::MakeRequest(HttpRequest& request, 
+        Aws::Utils::RateLimits::RateLimiterInterface* readLimiter,
+        Aws::Utils::RateLimits::RateLimiterInterface* writeLimiter) const
+{
+    auto response = Aws::MakeShared<StandardHttpResponse>(CURL_HTTP_CLIENT_TAG, request);
+    MakeRequestInternal(request, response, readLimiter, writeLimiter);
     return response;
 }
+
+std::shared_ptr<HttpResponse> CurlHttpClient::MakeRequest(const std::shared_ptr<HttpRequest>& request, Aws::Utils::RateLimits::RateLimiterInterface* readLimiter,
+                                                          Aws::Utils::RateLimits::RateLimiterInterface* writeLimiter) const
+{
+    auto response = Aws::MakeShared<StandardHttpResponse>(CURL_HTTP_CLIENT_TAG, request);
+    MakeRequestInternal(*request, response, readLimiter, writeLimiter);
+    return response;
+}
+

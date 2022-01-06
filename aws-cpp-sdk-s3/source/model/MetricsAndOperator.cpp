@@ -1,7 +1,17 @@
-﻿/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+﻿/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 #include <aws/s3/model/MetricsAndOperator.h>
 #include <aws/core/utils/xml/XmlSerializer.h>
@@ -22,15 +32,13 @@ namespace Model
 
 MetricsAndOperator::MetricsAndOperator() : 
     m_prefixHasBeenSet(false),
-    m_tagsHasBeenSet(false),
-    m_accessPointArnHasBeenSet(false)
+    m_tagsHasBeenSet(false)
 {
 }
 
 MetricsAndOperator::MetricsAndOperator(const XmlNode& xmlNode) : 
     m_prefixHasBeenSet(false),
-    m_tagsHasBeenSet(false),
-    m_accessPointArnHasBeenSet(false)
+    m_tagsHasBeenSet(false)
 {
   *this = xmlNode;
 }
@@ -59,12 +67,6 @@ MetricsAndOperator& MetricsAndOperator::operator =(const XmlNode& xmlNode)
 
       m_tagsHasBeenSet = true;
     }
-    XmlNode accessPointArnNode = resultNode.FirstChild("AccessPointArn");
-    if(!accessPointArnNode.IsNull())
-    {
-      m_accessPointArn = Aws::Utils::Xml::DecodeEscapedXmlText(accessPointArnNode.GetText());
-      m_accessPointArnHasBeenSet = true;
-    }
   }
 
   return *this;
@@ -87,12 +89,6 @@ void MetricsAndOperator::AddToNode(XmlNode& parentNode) const
      XmlNode tagsNode = tagsParentNode.CreateChildElement("Tag");
      item.AddToNode(tagsNode);
    }
-  }
-
-  if(m_accessPointArnHasBeenSet)
-  {
-   XmlNode accessPointArnNode = parentNode.CreateChildElement("AccessPointArn");
-   accessPointArnNode.SetText(m_accessPointArn);
   }
 
 }

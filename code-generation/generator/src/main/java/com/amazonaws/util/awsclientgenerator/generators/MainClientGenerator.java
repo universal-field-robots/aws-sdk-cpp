@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 package com.amazonaws.util.awsclientgenerator.generators;
 
@@ -21,7 +31,7 @@ import java.util.zip.ZipOutputStream;
 
 public class MainClientGenerator {
 
-    public File generateSourceFromC2jModel(C2jServiceModel c2jModel, String serviceName, String languageBinding, String namespace, String licenseText, boolean generateStandalonePackage, boolean enableVirtualOperations) throws Exception {
+    public File generateSourceFromC2jModel(C2jServiceModel c2jModel, String serviceName, String languageBinding, String namespace, String licenseText, boolean generateStandalonePackage) throws Exception {
 
         SdkSpec spec = new SdkSpec(languageBinding, serviceName, null);
         // Transform to ServiceModel
@@ -32,7 +42,6 @@ public class MainClientGenerator {
         serviceModel.setRuntimeMinorVersion("@RUNTIME_MINOR_VERSION@");
         serviceModel.setNamespace(namespace);
         serviceModel.setLicenseText(licenseText);
-        serviceModel.setEnableVirtualOperations(enableVirtualOperations);
 
         spec.setVersion(serviceModel.getMetadata().getApiVersion());
 

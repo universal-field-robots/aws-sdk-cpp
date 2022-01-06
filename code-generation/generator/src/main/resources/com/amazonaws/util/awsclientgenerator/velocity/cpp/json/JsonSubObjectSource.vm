@@ -31,7 +31,6 @@ ${typeInfo.className}::${typeInfo.className}(JsonView jsonValue)$initializers
 {
   *this = jsonValue;
 }
-#parse("com/amazonaws/util/awsclientgenerator/velocity/cpp/ModelClassMembersImplementations.vm")
 
 ${typeInfo.className}& ${typeInfo.className}::operator =(JsonView jsonValue)
 {

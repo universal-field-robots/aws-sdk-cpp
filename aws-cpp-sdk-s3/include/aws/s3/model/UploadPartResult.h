@@ -1,7 +1,17 @@
-﻿/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+﻿/*
+* Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+*  http://aws.amazon.com/apache2.0
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 
 #pragma once
 #include <aws/s3/S3_EXPORTS.h>
@@ -35,32 +45,32 @@ namespace Model
 
 
     /**
-     * <p>The server-side encryption algorithm used when storing this object in Amazon
-     * S3 (for example, AES256, aws:kms).</p>
+     * <p>The Server-side encryption algorithm used when storing this object in S3
+     * (e.g., AES256, aws:kms).</p>
      */
     inline const ServerSideEncryption& GetServerSideEncryption() const{ return m_serverSideEncryption; }
 
     /**
-     * <p>The server-side encryption algorithm used when storing this object in Amazon
-     * S3 (for example, AES256, aws:kms).</p>
+     * <p>The Server-side encryption algorithm used when storing this object in S3
+     * (e.g., AES256, aws:kms).</p>
      */
     inline void SetServerSideEncryption(const ServerSideEncryption& value) { m_serverSideEncryption = value; }
 
     /**
-     * <p>The server-side encryption algorithm used when storing this object in Amazon
-     * S3 (for example, AES256, aws:kms).</p>
+     * <p>The Server-side encryption algorithm used when storing this object in S3
+     * (e.g., AES256, aws:kms).</p>
      */
     inline void SetServerSideEncryption(ServerSideEncryption&& value) { m_serverSideEncryption = std::move(value); }
 
     /**
-     * <p>The server-side encryption algorithm used when storing this object in Amazon
-     * S3 (for example, AES256, aws:kms).</p>
+     * <p>The Server-side encryption algorithm used when storing this object in S3
+     * (e.g., AES256, aws:kms).</p>
      */
     inline UploadPartResult& WithServerSideEncryption(const ServerSideEncryption& value) { SetServerSideEncryption(value); return *this;}
 
     /**
-     * <p>The server-side encryption algorithm used when storing this object in Amazon
-     * S3 (for example, AES256, aws:kms).</p>
+     * <p>The Server-side encryption algorithm used when storing this object in S3
+     * (e.g., AES256, aws:kms).</p>
      */
     inline UploadPartResult& WithServerSideEncryption(ServerSideEncryption&& value) { SetServerSideEncryption(std::move(value)); return *this;}
 
@@ -153,121 +163,95 @@ namespace Model
 
     /**
      * <p>If server-side encryption with a customer-provided encryption key was
-     * requested, the response will include this header to provide round-trip message
+     * requested, the response will include this header to provide round trip message
      * integrity verification of the customer-provided encryption key.</p>
      */
     inline const Aws::String& GetSSECustomerKeyMD5() const{ return m_sSECustomerKeyMD5; }
 
     /**
      * <p>If server-side encryption with a customer-provided encryption key was
-     * requested, the response will include this header to provide round-trip message
+     * requested, the response will include this header to provide round trip message
      * integrity verification of the customer-provided encryption key.</p>
      */
     inline void SetSSECustomerKeyMD5(const Aws::String& value) { m_sSECustomerKeyMD5 = value; }
 
     /**
      * <p>If server-side encryption with a customer-provided encryption key was
-     * requested, the response will include this header to provide round-trip message
+     * requested, the response will include this header to provide round trip message
      * integrity verification of the customer-provided encryption key.</p>
      */
     inline void SetSSECustomerKeyMD5(Aws::String&& value) { m_sSECustomerKeyMD5 = std::move(value); }
 
     /**
      * <p>If server-side encryption with a customer-provided encryption key was
-     * requested, the response will include this header to provide round-trip message
+     * requested, the response will include this header to provide round trip message
      * integrity verification of the customer-provided encryption key.</p>
      */
     inline void SetSSECustomerKeyMD5(const char* value) { m_sSECustomerKeyMD5.assign(value); }
 
     /**
      * <p>If server-side encryption with a customer-provided encryption key was
-     * requested, the response will include this header to provide round-trip message
+     * requested, the response will include this header to provide round trip message
      * integrity verification of the customer-provided encryption key.</p>
      */
     inline UploadPartResult& WithSSECustomerKeyMD5(const Aws::String& value) { SetSSECustomerKeyMD5(value); return *this;}
 
     /**
      * <p>If server-side encryption with a customer-provided encryption key was
-     * requested, the response will include this header to provide round-trip message
+     * requested, the response will include this header to provide round trip message
      * integrity verification of the customer-provided encryption key.</p>
      */
     inline UploadPartResult& WithSSECustomerKeyMD5(Aws::String&& value) { SetSSECustomerKeyMD5(std::move(value)); return *this;}
 
     /**
      * <p>If server-side encryption with a customer-provided encryption key was
-     * requested, the response will include this header to provide round-trip message
+     * requested, the response will include this header to provide round trip message
      * integrity verification of the customer-provided encryption key.</p>
      */
     inline UploadPartResult& WithSSECustomerKeyMD5(const char* value) { SetSSECustomerKeyMD5(value); return *this;}
 
 
     /**
-     * <p>If present, specifies the ID of the Amazon Web Services Key Management
-     * Service (Amazon Web Services KMS) symmetric customer managed key was used for
-     * the object.</p>
+     * <p>If present, specifies the ID of the AWS Key Management Service (KMS) master
+     * encryption key that was used for the object.</p>
      */
     inline const Aws::String& GetSSEKMSKeyId() const{ return m_sSEKMSKeyId; }
 
     /**
-     * <p>If present, specifies the ID of the Amazon Web Services Key Management
-     * Service (Amazon Web Services KMS) symmetric customer managed key was used for
-     * the object.</p>
+     * <p>If present, specifies the ID of the AWS Key Management Service (KMS) master
+     * encryption key that was used for the object.</p>
      */
     inline void SetSSEKMSKeyId(const Aws::String& value) { m_sSEKMSKeyId = value; }
 
     /**
-     * <p>If present, specifies the ID of the Amazon Web Services Key Management
-     * Service (Amazon Web Services KMS) symmetric customer managed key was used for
-     * the object.</p>
+     * <p>If present, specifies the ID of the AWS Key Management Service (KMS) master
+     * encryption key that was used for the object.</p>
      */
     inline void SetSSEKMSKeyId(Aws::String&& value) { m_sSEKMSKeyId = std::move(value); }
 
     /**
-     * <p>If present, specifies the ID of the Amazon Web Services Key Management
-     * Service (Amazon Web Services KMS) symmetric customer managed key was used for
-     * the object.</p>
+     * <p>If present, specifies the ID of the AWS Key Management Service (KMS) master
+     * encryption key that was used for the object.</p>
      */
     inline void SetSSEKMSKeyId(const char* value) { m_sSEKMSKeyId.assign(value); }
 
     /**
-     * <p>If present, specifies the ID of the Amazon Web Services Key Management
-     * Service (Amazon Web Services KMS) symmetric customer managed key was used for
-     * the object.</p>
+     * <p>If present, specifies the ID of the AWS Key Management Service (KMS) master
+     * encryption key that was used for the object.</p>
      */
     inline UploadPartResult& WithSSEKMSKeyId(const Aws::String& value) { SetSSEKMSKeyId(value); return *this;}
 
     /**
-     * <p>If present, specifies the ID of the Amazon Web Services Key Management
-     * Service (Amazon Web Services KMS) symmetric customer managed key was used for
-     * the object.</p>
+     * <p>If present, specifies the ID of the AWS Key Management Service (KMS) master
+     * encryption key that was used for the object.</p>
      */
     inline UploadPartResult& WithSSEKMSKeyId(Aws::String&& value) { SetSSEKMSKeyId(std::move(value)); return *this;}
 
     /**
-     * <p>If present, specifies the ID of the Amazon Web Services Key Management
-     * Service (Amazon Web Services KMS) symmetric customer managed key was used for
-     * the object.</p>
+     * <p>If present, specifies the ID of the AWS Key Management Service (KMS) master
+     * encryption key that was used for the object.</p>
      */
     inline UploadPartResult& WithSSEKMSKeyId(const char* value) { SetSSEKMSKeyId(value); return *this;}
-
-
-    /**
-     * <p>Indicates whether the multipart upload uses an S3 Bucket Key for server-side
-     * encryption with Amazon Web Services KMS (SSE-KMS).</p>
-     */
-    inline bool GetBucketKeyEnabled() const{ return m_bucketKeyEnabled; }
-
-    /**
-     * <p>Indicates whether the multipart upload uses an S3 Bucket Key for server-side
-     * encryption with Amazon Web Services KMS (SSE-KMS).</p>
-     */
-    inline void SetBucketKeyEnabled(bool value) { m_bucketKeyEnabled = value; }
-
-    /**
-     * <p>Indicates whether the multipart upload uses an S3 Bucket Key for server-side
-     * encryption with Amazon Web Services KMS (SSE-KMS).</p>
-     */
-    inline UploadPartResult& WithBucketKeyEnabled(bool value) { SetBucketKeyEnabled(value); return *this;}
 
 
     
@@ -296,8 +280,6 @@ namespace Model
     Aws::String m_sSECustomerKeyMD5;
 
     Aws::String m_sSEKMSKeyId;
-
-    bool m_bucketKeyEnabled;
 
     RequestCharged m_requestCharged;
   };

@@ -1,6 +1,16 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+/*
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ *  http://aws.amazon.com/apache2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
  */
 #pragma once
 
@@ -26,7 +36,7 @@ namespace Aws
             public:
                 /**
                  * @param decoder decodes the stream from server side, so as to invoke related callback functions.
-                 * @param bufferSize The length of buffer, will be 1024 bytes by default.
+                 * @param bufferSize The length of buffer, wiil be 1024 bytes by default.
                  */
                 EventStreamBuf(EventStreamDecoder& decoder, size_t bufferLength = DEFAULT_BUF_SIZE);
                 virtual ~EventStreamBuf();

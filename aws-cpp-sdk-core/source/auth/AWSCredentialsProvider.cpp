@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+  * 
+  * Licensed under the Apache License, Version 2.0 (the "License").
+  * You may not use this file except in compliance with the License.
+  * A copy of the License is located at
+  * 
+  *  http://aws.amazon.com/apache2.0
+  * 
+  * or in the "license" file accompanying this file. This file is distributed
+  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  * express or implied. See the License for the specific language governing
+  * permissions and limitations under the License.
+  */
 
 
 #include <aws/core/auth/AWSCredentialsProvider.h>
@@ -71,7 +81,7 @@ static const char* ENVIRONMENT_LOG_TAG = "EnvironmentAWSCredentialsProvider";
 AWSCredentials EnvironmentAWSCredentialsProvider::GetAWSCredentials()
 {
     auto accessKey = Aws::Environment::GetEnv(ACCESS_KEY_ENV_VAR);
-    AWSCredentials credentials;
+    AWSCredentials credentials("", "", "");
 
     if (!accessKey.empty())
     {
@@ -268,7 +278,7 @@ void InstanceProfileCredentialsProvider::RefreshIfExpired()
     guard.UpgradeToWriterLock();
     if (!IsTimeToRefresh(m_loadFrequencyMs)) // double-checked lock to avoid refreshing twice
     {
-        return;
+        return; 
     }
     Reload();
 }
@@ -277,14 +287,17 @@ static const char TASK_ROLE_LOG_TAG[] = "TaskRoleCredentialsProvider";
 
 TaskRoleCredentialsProvider::TaskRoleCredentialsProvider(const char* URI, long refreshRateMs) :
     m_ecsCredentialsClient(Aws::MakeShared<Aws::Internal::ECSCredentialsClient>(TASK_ROLE_LOG_TAG, URI)),
-    m_loadFrequencyMs(refreshRateMs)
+    m_loadFrequencyMs(refreshRateMs),
+    m_expirationDate(DateTime::Now())
 {
     AWS_LOGSTREAM_INFO(TASK_ROLE_LOG_TAG, "Creating TaskRole with default ECSCredentialsClient and refresh rate " << refreshRateMs);
 }
 
 TaskRoleCredentialsProvider::TaskRoleCredentialsProvider(const char* endpoint, const char* token, long refreshRateMs) :
-    m_ecsCredentialsClient(Aws::MakeShared<Aws::Internal::ECSCredentialsClient>(TASK_ROLE_LOG_TAG, ""/*resourcePath*/, endpoint, token)),
-    m_loadFrequencyMs(refreshRateMs)
+    m_ecsCredentialsClient(Aws::MakeShared<Aws::Internal::ECSCredentialsClient>(TASK_ROLE_LOG_TAG, ""/*resourcePath*/,
+                endpoint, token)),
+    m_loadFrequencyMs(refreshRateMs),
+    m_expirationDate(DateTime::Now())
 {
     AWS_LOGSTREAM_INFO(TASK_ROLE_LOG_TAG, "Creating TaskRole with default ECSCredentialsClient and refresh rate " << refreshRateMs);
 }
@@ -292,7 +305,8 @@ TaskRoleCredentialsProvider::TaskRoleCredentialsProvider(const char* endpoint, c
 TaskRoleCredentialsProvider::TaskRoleCredentialsProvider(
         const std::shared_ptr<Aws::Internal::ECSCredentialsClient>& client, long refreshRateMs) :
     m_ecsCredentialsClient(client),
-    m_loadFrequencyMs(refreshRateMs)
+    m_loadFrequencyMs(refreshRateMs),
+    m_expirationDate(DateTime::Now())
 {
     AWS_LOGSTREAM_INFO(TASK_ROLE_LOG_TAG, "Creating TaskRole with default ECSCredentialsClient and refresh rate " << refreshRateMs);
 }
@@ -306,7 +320,7 @@ AWSCredentials TaskRoleCredentialsProvider::GetAWSCredentials()
 
 bool TaskRoleCredentialsProvider::ExpiresSoon() const
 {
-    return ((m_credentials.GetExpiration() - Aws::Utils::DateTime::Now()).count() < EXPIRATION_GRACE_PERIOD);
+    return (m_expirationDate.Millis() - Aws::Utils::DateTime::Now().Millis() < EXPIRATION_GRACE_PERIOD);
 }
 
 void TaskRoleCredentialsProvider::Reload()
@@ -317,7 +331,7 @@ void TaskRoleCredentialsProvider::Reload()
     if (credentialsStr.empty()) return;
 
     Json::JsonValue credentialsDoc(credentialsStr);
-    if (!credentialsDoc.WasParseSuccessful())
+    if (!credentialsDoc.WasParseSuccessful()) 
     {
         AWS_LOGSTREAM_ERROR(TASK_ROLE_LOG_TAG, "Failed to parse output from ECSCredentialService.");
         return;
@@ -333,7 +347,7 @@ void TaskRoleCredentialsProvider::Reload()
     m_credentials.SetAWSAccessKeyId(accessKey);
     m_credentials.SetAWSSecretKey(secretKey);
     m_credentials.SetSessionToken(token);
-    m_credentials.SetExpiration(Aws::Utils::DateTime(credentialsView.GetString("Expiration"), DateFormat::ISO_8601));
+    m_expirationDate = Aws::Utils::DateTime(credentialsView.GetString("Expiration"), DateFormat::ISO_8601);
     AWSCredentialsProvider::Reload();
 }
 
@@ -341,14 +355,14 @@ void TaskRoleCredentialsProvider::RefreshIfExpired()
 {
     AWS_LOGSTREAM_DEBUG(TASK_ROLE_LOG_TAG, "Checking if latest credential pull has expired.");
     ReaderLockGuard guard(m_reloadLock);
-    if (!m_credentials.IsEmpty() && !IsTimeToRefresh(m_loadFrequencyMs) && !ExpiresSoon())
+    if (!IsTimeToRefresh(m_loadFrequencyMs) && !ExpiresSoon())
     {
         return;
     }
 
     guard.UpgradeToWriterLock();
 
-    if (!m_credentials.IsEmpty() && !IsTimeToRefresh(m_loadFrequencyMs) && !ExpiresSoon())
+    if (!IsTimeToRefresh(m_loadFrequencyMs) && !ExpiresSoon())
     {
         return;
     }
@@ -358,13 +372,17 @@ void TaskRoleCredentialsProvider::RefreshIfExpired()
 
 static const char PROCESS_LOG_TAG[] = "ProcessCredentialsProvider";
 ProcessCredentialsProvider::ProcessCredentialsProvider() :
-    m_profileToUse(Aws::Auth::GetConfigProfileName())
+    m_profileToUse(Aws::Auth::GetConfigProfileName()),
+    m_configFileLoader(GetConfigProfileFilename(), true),
+    m_expire(std::chrono::time_point<std::chrono::system_clock>::min())
 {
     AWS_LOGSTREAM_INFO(PROCESS_LOG_TAG, "Setting process credentials provider to read config from " <<  m_profileToUse);
 }
 
 ProcessCredentialsProvider::ProcessCredentialsProvider(const Aws::String& profile) :
-    m_profileToUse(profile)
+    m_profileToUse(profile),
+    m_configFileLoader(GetConfigProfileFilename(), true),
+    m_expire(std::chrono::time_point<std::chrono::system_clock>::min())
 {
     AWS_LOGSTREAM_INFO(PROCESS_LOG_TAG, "Setting process credentials provider to read config from " <<  m_profileToUse);
 }
@@ -373,94 +391,66 @@ AWSCredentials ProcessCredentialsProvider::GetAWSCredentials()
 {
     RefreshIfExpired();
     ReaderLockGuard guard(m_reloadLock);
+    if (m_expire <= Aws::Utils::DateTime::Now())
+    {
+        return Aws::Auth::AWSCredentials();
+    }
     return m_credentials;
 }
 
 
 void ProcessCredentialsProvider::Reload()
 {
-    auto profile = Aws::Config::GetCachedConfigProfile(m_profileToUse);
-    const Aws::String &command = profile.GetCredentialProcess();
-    if (command.empty())
+    m_configFileLoader.Load();
+    auto configFileProfileIter = m_configFileLoader.GetProfiles().find(m_profileToUse);
+    if(configFileProfileIter == m_configFileLoader.GetProfiles().end())
     {
-        AWS_LOGSTREAM_INFO(PROCESS_LOG_TAG, "Failed to find credential process's profile: " << m_profileToUse);
+        AWS_LOGSTREAM_ERROR(PROCESS_LOG_TAG, "Failed to find credential process's profile: " << m_profileToUse);
         return;
     }
-    m_credentials = GetCredentialsFromProcess(command);
+    
+    Aws::String command = configFileProfileIter->second.GetCredentialProcess();
+    command.append(" 2>&1"); // redirect stderr to stdout
+    Aws::String result = Aws::Utils::StringUtils::Trim(Aws::OSVersionInfo::GetSysCommandOutput(command.c_str()).c_str());
+    Json::JsonValue credentialsDoc(result);
+    if (!credentialsDoc.WasParseSuccessful()) 
+    {
+        AWS_LOGSTREAM_ERROR(PROCESS_LOG_TAG, "Failed to load credential from running: " << command << " Error: " << result);
+        return;
+    }
+
+    Aws::Utils::Json::JsonView credentialsView(credentialsDoc);
+    if (!credentialsView.KeyExists("Version") || credentialsView.GetInteger("Version") != 1)
+    {
+        AWS_LOGSTREAM_ERROR(PROCESS_LOG_TAG, "Encountered an unsupported process credentials payload version:" << credentialsView.GetInteger("Version"));
+        return;
+    }
+
+    Aws::String accessKey, secretKey, token, expire;
+    accessKey = credentialsView.GetString("AccessKeyId");
+    secretKey = credentialsView.GetString("SecretAccessKey");
+    token = credentialsView.GetString("SessionToken");
+
+    m_credentials.SetAWSAccessKeyId(accessKey);
+    m_credentials.SetAWSSecretKey(secretKey);
+    m_credentials.SetSessionToken(token);
+    m_expire = credentialsView.KeyExists("Expiration") ? Aws::Utils::DateTime(credentialsView.GetString("Expiration"), DateFormat::ISO_8601) : Aws::Utils::DateTime(std::chrono::time_point<std::chrono::system_clock>::max());
+    AWS_LOGSTREAM_DEBUG(PROCESS_LOG_TAG, "Successfully pulled credentials from process credential with AccessKey " << accessKey << ", Expiration:" << credentialsView.GetString("Expiration"));
 }
 
 void ProcessCredentialsProvider::RefreshIfExpired()
 {
     ReaderLockGuard guard(m_reloadLock);
-    if (!m_credentials.IsExpiredOrEmpty())
+    if (Aws::Utils::DateTime::Now() < m_expire)
     {
        return;
     }
 
     guard.UpgradeToWriterLock();
-    if (!m_credentials.IsExpiredOrEmpty()) // double-checked lock to avoid refreshing twice
+    if (Aws::Utils::DateTime::Now() < m_expire) // double-checked lock to avoid refreshing twice
     {
         return;
     }
 
     Reload();
 }
-
-AWSCredentials Aws::Auth::GetCredentialsFromProcess(const Aws::String& process)
-{
-    Aws::String command = process;
-    command.append(" 2>&1"); // redirect stderr to stdout
-    Aws::String result = Aws::Utils::StringUtils::Trim(Aws::OSVersionInfo::GetSysCommandOutput(command.c_str()).c_str());
-    Json::JsonValue credentialsDoc(result);
-    if (!credentialsDoc.WasParseSuccessful())
-    {
-        AWS_LOGSTREAM_ERROR(PROFILE_LOG_TAG, "Failed to load credential from running: " << command << " Error: " << result);
-        return {};
-    }
-
-    Aws::Utils::Json::JsonView credentialsView(credentialsDoc);
-    if (!credentialsView.KeyExists("Version") || credentialsView.GetInteger("Version") != 1)
-    {
-        AWS_LOGSTREAM_ERROR(PROFILE_LOG_TAG, "Encountered an unsupported process credentials payload version:" << credentialsView.GetInteger("Version"));
-        return {};
-    }
-
-    AWSCredentials credentials;
-    Aws::String accessKey, secretKey, token, expire;
-    if (credentialsView.KeyExists("AccessKeyId"))
-    {
-        credentials.SetAWSAccessKeyId(credentialsView.GetString("AccessKeyId"));
-    }
-
-    if (credentialsView.KeyExists("SecretAccessKey"))
-    {
-        credentials.SetAWSSecretKey(credentialsView.GetString("SecretAccessKey"));
-    }
-
-    if (credentialsView.KeyExists("SessionToken"))
-    {
-        credentials.SetSessionToken(credentialsView.GetString("SessionToken"));
-    }
-
-    if (credentialsView.KeyExists("Expiration"))
-    {
-        const auto expiration = Aws::Utils::DateTime(credentialsView.GetString("Expiration"), DateFormat::ISO_8601);
-        if (expiration.WasParseSuccessful())
-        {
-            credentials.SetExpiration(expiration);
-        }
-        else
-        {
-            AWS_LOGSTREAM_ERROR(PROFILE_LOG_TAG, "Failed to parse credential's expiration value as an ISO 8601 Date. Credentials will be marked expired.");
-            credentials.SetExpiration(Aws::Utils::DateTime::Now());
-        }
-    }
-    else
-    {
-        credentials.SetExpiration((std::chrono::time_point<std::chrono::system_clock>::max)());
-    }
-
-    AWS_LOGSTREAM_DEBUG(PROFILE_LOG_TAG, "Successfully pulled credentials from process credential with AccessKey: " << accessKey << ", Expiration:" << credentialsView.GetString("Expiration"));
-    return credentials;
-}
-

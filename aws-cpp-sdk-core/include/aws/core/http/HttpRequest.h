@@ -1,7 +1,17 @@
-/**
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
- */
+/*
+  * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License").
+  * You may not use this file except in compliance with the License.
+  * A copy of the License is located at
+  *
+  *  http://aws.amazon.com/apache2.0
+  *
+  * or in the "license" file accompanying this file. This file is distributed
+  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  * express or implied. See the License for the specific language governing
+  * permissions and limitations under the License.
+  */
 
 #pragma once
 
@@ -16,45 +26,38 @@
 #include <memory>
 #include <functional>
 
+using namespace Aws::Monitoring;
+
 namespace Aws
 {
-    namespace Crt
-    {
-        namespace Http
-        {
-            class HttpRequest;
-        }
-    }
     namespace Http
     {
-        extern AWS_CORE_API const char DATE_HEADER[];
-        extern AWS_CORE_API const char AWS_DATE_HEADER[];
-        extern AWS_CORE_API const char AWS_SECURITY_TOKEN[];
-        extern AWS_CORE_API const char ACCEPT_HEADER[];
-        extern AWS_CORE_API const char ACCEPT_CHAR_SET_HEADER[];
-        extern AWS_CORE_API const char ACCEPT_ENCODING_HEADER[];
-        extern AWS_CORE_API const char AUTHORIZATION_HEADER[];
-        extern AWS_CORE_API const char AWS_AUTHORIZATION_HEADER[];
-        extern AWS_CORE_API const char COOKIE_HEADER[];
-        extern AWS_CORE_API const char CONTENT_LENGTH_HEADER[];
-        extern AWS_CORE_API const char CONTENT_TYPE_HEADER[];
-        extern AWS_CORE_API const char TRANSFER_ENCODING_HEADER[];
-        extern AWS_CORE_API const char USER_AGENT_HEADER[];
-        extern AWS_CORE_API const char VIA_HEADER[];
-        extern AWS_CORE_API const char HOST_HEADER[];
-        extern AWS_CORE_API const char AMZ_TARGET_HEADER[];
-        extern AWS_CORE_API const char X_AMZ_EXPIRES_HEADER[];
-        extern AWS_CORE_API const char CONTENT_MD5_HEADER[];
-        extern AWS_CORE_API const char API_VERSION_HEADER[];
-        extern AWS_CORE_API const char SDK_INVOCATION_ID_HEADER[];
-        extern AWS_CORE_API const char SDK_REQUEST_HEADER[];
-        extern AWS_CORE_API const char CHUNKED_VALUE[];
+        extern AWS_CORE_API const char* DATE_HEADER;
+        extern AWS_CORE_API const char* AWS_DATE_HEADER;
+        extern AWS_CORE_API const char* AWS_SECURITY_TOKEN;
+        extern AWS_CORE_API const char* ACCEPT_HEADER;
+        extern AWS_CORE_API const char* ACCEPT_CHAR_SET_HEADER;
+        extern AWS_CORE_API const char* ACCEPT_ENCODING_HEADER;
+        extern AWS_CORE_API const char* AUTHORIZATION_HEADER;
+        extern AWS_CORE_API const char* AWS_AUTHORIZATION_HEADER;
+        extern AWS_CORE_API const char* COOKIE_HEADER;
+        extern AWS_CORE_API const char* CONTENT_LENGTH_HEADER;
+        extern AWS_CORE_API const char* CONTENT_TYPE_HEADER;
+        extern AWS_CORE_API const char* TRANSFER_ENCODING_HEADER;
+        extern AWS_CORE_API const char* USER_AGENT_HEADER;
+        extern AWS_CORE_API const char* VIA_HEADER;
+        extern AWS_CORE_API const char* HOST_HEADER;
+        extern AWS_CORE_API const char* AMZ_TARGET_HEADER;
+        extern AWS_CORE_API const char* X_AMZ_EXPIRES_HEADER;
+        extern AWS_CORE_API const char* CONTENT_MD5_HEADER;
+        extern AWS_CORE_API const char* API_VERSION_HEADER;
+        extern AWS_CORE_API const char* CHUNKED_VALUE;
 
         class HttpRequest;
         class HttpResponse;
 
         /**
-         * closure type for receiving notifications that data has been received.
+         * closure type for recieving notifications that data has been recieved.
          */
         typedef std::function<void(const HttpRequest*, HttpResponse*, long long)> DataReceivedEventHandler;
         /**
@@ -76,7 +79,7 @@ namespace Aws
              * Initializes an HttpRequest object with uri and http method.
              */
             HttpRequest(const URI& uri, HttpMethod method) :
-                m_uri(uri), m_method(method), m_isEvenStreamRequest(false)
+                m_uri(uri), m_method(method)
             {}
 
             virtual ~HttpRequest() {}
@@ -86,7 +89,7 @@ namespace Aws
              */
             virtual HeaderValueCollection GetHeaders() const = 0;
             /**
-             * Get the value for a Header based on its name. (in default StandardHttpRequest implementation, an empty string will be returned if headerName doesn't exist)
+             * Get the value for a Header based on its name. (in default StandardHttpRequest implementation, an empty string will be returned if headerName dosen't exist)
              */
             virtual const Aws::String& GetHeaderValue(const char* headerName) const = 0;
             /**
@@ -138,7 +141,7 @@ namespace Aws
             const URI& GetUri() const { return m_uri; }
             /**
              * Converts the URI into a string and returns it. If includeQueryString is set to true, the query string
-             * will be included in the returned value.
+             * will be included in the returned value. 
              */
             inline Aws::String GetURIString(bool includeQueryString = true) const
             {
@@ -180,7 +183,7 @@ namespace Aws
                 m_uri.AddQueryStringParameter(key, value);
             }
 
-            inline bool HasDate() const
+            inline bool HasDate() const 
             {
                 return HasHeader(DATE_HEADER);
             }
@@ -514,12 +517,12 @@ namespace Aws
             /**
             * Sets the request metrics
             */
-            virtual void SetRequestMetrics(const Aws::Monitoring::HttpClientMetricsCollection& collection) { m_httpRequestMetrics = collection; }
+            virtual void SetRequestMetrics(const HttpClientMetricsCollection& collection) { m_httpRequestMetrics = collection; }
 
             /**
             * Gets the request metrics
             */
-            virtual const Aws::Monitoring::HttpClientMetricsCollection& GetRequestMetrics() const { return m_httpRequestMetrics; }
+            virtual const HttpClientMetricsCollection& GetRequestMetrics() const { return m_httpRequestMetrics; }
 
             /**
              * Returns the IP address of the remote host the request was made out to.
@@ -530,22 +533,20 @@ namespace Aws
             Aws::String GetResolvedRemoteHost() const { return m_resolvedRemoteHost; }
             void SetResolvedRemoteHost(const Aws::String& ip) { m_resolvedRemoteHost = ip; }
 
-            bool IsEventStreamRequest() { return m_isEvenStreamRequest; }
-            void SetEventStreamRequest(bool eventStreamRequest) { m_isEvenStreamRequest = eventStreamRequest; }
-
-            virtual std::shared_ptr<Aws::Crt::Http::HttpRequest> ToCrtHttpRequest();
         private:
             URI m_uri;
             HttpMethod m_method;
-            bool m_isEvenStreamRequest;
             DataReceivedEventHandler m_onDataReceived;
             DataSentEventHandler m_onDataSent;
             ContinueRequestHandler m_continueRequest;
             Aws::String m_signingRegion;
             Aws::String m_signingAccessKey;
             Aws::String m_resolvedRemoteHost;
-            Aws::Monitoring::HttpClientMetricsCollection m_httpRequestMetrics;
+            HttpClientMetricsCollection m_httpRequestMetrics;
         };
 
     } // namespace Http
 } // namespace Aws
+
+
+

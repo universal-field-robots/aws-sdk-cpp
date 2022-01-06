@@ -9,7 +9,6 @@
 #include <aws/s3/model/BucketCannedACL.h>
 #include <aws/core/utils/memory/stl/AWSString.h>
 #include <aws/s3/model/CreateBucketConfiguration.h>
-#include <aws/s3/model/ObjectOwnership.h>
 #include <aws/core/utils/memory/stl/AWSMap.h>
 #include <utility>
 
@@ -402,25 +401,6 @@ namespace Model
 
 
     
-    inline const ObjectOwnership& GetObjectOwnership() const{ return m_objectOwnership; }
-
-    
-    inline bool ObjectOwnershipHasBeenSet() const { return m_objectOwnershipHasBeenSet; }
-
-    
-    inline void SetObjectOwnership(const ObjectOwnership& value) { m_objectOwnershipHasBeenSet = true; m_objectOwnership = value; }
-
-    
-    inline void SetObjectOwnership(ObjectOwnership&& value) { m_objectOwnershipHasBeenSet = true; m_objectOwnership = std::move(value); }
-
-    
-    inline CreateBucketRequest& WithObjectOwnership(const ObjectOwnership& value) { SetObjectOwnership(value); return *this;}
-
-    
-    inline CreateBucketRequest& WithObjectOwnership(ObjectOwnership&& value) { SetObjectOwnership(std::move(value)); return *this;}
-
-
-    
     inline const Aws::Map<Aws::String, Aws::String>& GetCustomizedAccessLogTag() const{ return m_customizedAccessLogTag; }
 
     
@@ -487,9 +467,6 @@ namespace Model
 
     bool m_objectLockEnabledForBucket;
     bool m_objectLockEnabledForBucketHasBeenSet;
-
-    ObjectOwnership m_objectOwnership;
-    bool m_objectOwnershipHasBeenSet;
 
     Aws::Map<Aws::String, Aws::String> m_customizedAccessLogTag;
     bool m_customizedAccessLogTagHasBeenSet;

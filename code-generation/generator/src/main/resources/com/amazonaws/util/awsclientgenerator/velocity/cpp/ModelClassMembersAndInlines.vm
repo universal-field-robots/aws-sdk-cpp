@@ -28,11 +28,6 @@
 #set($cppType = "const ${rawCppType}&")
 #set($moveType = "${rawCppType}&&")
 #end
-#if($subShape.document)
-#set($returnType = "Aws::Utils::DocumentView")
-#else
-#set($returnType = ${cppType})
-#end
 #set ($required = '')
 #if(!$isEventStreamInput && !$member.value.required && $useRequiredField)
 #set ($required = "${CppViewHelper.computeVariableHasBeenSetName($member.key)} = true; ")
@@ -86,7 +81,7 @@
 #set($override = " override ")
 #end
     $memberDocumentation
-    ${inline}${returnType} Get${memberKeyWithFirstLetterCapitalized}() const$override${getterBody}
+    ${inline}${cppType} Get${memberKeyWithFirstLetterCapitalized}() const$override${getterBody}
 
 #end
 #if(!$isStream && !$isEventStreamInput)

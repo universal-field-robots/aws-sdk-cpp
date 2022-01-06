@@ -241,14 +241,7 @@ HttpResponseOutcome AWSClient::AttemptExhaustively(const Aws::Http::URI& uri,
 
     for (long retries = 0;; retries++)
     {
-        if(!m_retryStrategy->HasSendToken())
-        {
-            return HttpResponseOutcome(AWSError<CoreErrors>(CoreErrors::SLOW_DOWN,
-                                                               "",
-                                                               "Unable to acquire enough send tokens to execute request.",
-                                                               false/*retryable*/));
-
-        };
+        m_retryStrategy->GetSendToken();
         httpRequest->SetEventStreamRequest(request.IsEventStreamRequest());
 
         outcome = AttemptOneRequest(httpRequest, request, signerName, signerRegion, signerServiceNameOverride);
@@ -374,14 +367,7 @@ HttpResponseOutcome AWSClient::AttemptExhaustively(const Aws::Http::URI& uri,
 
     for (long retries = 0;; retries++)
     {
-        if(!m_retryStrategy->HasSendToken())
-        {
-            return HttpResponseOutcome(AWSError<CoreErrors>(CoreErrors::SLOW_DOWN,
-                                                            "",
-                                                            "Unable to acquire enough send tokens to execute request.",
-                                                            false/*retryable*/));
-
-        };
+        m_retryStrategy->GetSendToken();
         outcome = AttemptOneRequest(httpRequest, signerName, requestName, signerRegion, signerServiceNameOverride);
         if (retries == 0)
         {

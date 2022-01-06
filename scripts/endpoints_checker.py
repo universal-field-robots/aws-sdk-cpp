@@ -22,8 +22,7 @@ endpoints = ["us-east-1", "us-east-2",
           "sa-east-1",
           "cn-north-1", "cn-northwest-1",
           "ca-central-1",
-          "us-gov-west-1","us-gov-east-1",
-          "us-iso-west-1",
+          "us-gov-west-1","us-gov-east-1"
           "me-south-1",
           "af-south-1"];
 """

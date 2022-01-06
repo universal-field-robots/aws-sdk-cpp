@@ -77,8 +77,9 @@ namespace Model
 
     /**
      * <p>If the encryption type is <code>aws:kms</code>, this optional value specifies
-     * the ID of the symmetric customer managed key to use for encryption of job
-     * results. Amazon S3 only supports symmetric keys. For more information, see <a
+     * the ID of the symmetric customer managed Amazon Web Services KMS CMK to use for
+     * encryption of job results. Amazon S3 only supports symmetric CMKs. For more
+     * information, see <a
      * href="https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html">Using
      * symmetric and asymmetric keys</a> in the <i>Amazon Web Services Key Management
      * Service Developer Guide</i>.</p>
@@ -87,8 +88,9 @@ namespace Model
 
     /**
      * <p>If the encryption type is <code>aws:kms</code>, this optional value specifies
-     * the ID of the symmetric customer managed key to use for encryption of job
-     * results. Amazon S3 only supports symmetric keys. For more information, see <a
+     * the ID of the symmetric customer managed Amazon Web Services KMS CMK to use for
+     * encryption of job results. Amazon S3 only supports symmetric CMKs. For more
+     * information, see <a
      * href="https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html">Using
      * symmetric and asymmetric keys</a> in the <i>Amazon Web Services Key Management
      * Service Developer Guide</i>.</p>
@@ -97,8 +99,9 @@ namespace Model
 
     /**
      * <p>If the encryption type is <code>aws:kms</code>, this optional value specifies
-     * the ID of the symmetric customer managed key to use for encryption of job
-     * results. Amazon S3 only supports symmetric keys. For more information, see <a
+     * the ID of the symmetric customer managed Amazon Web Services KMS CMK to use for
+     * encryption of job results. Amazon S3 only supports symmetric CMKs. For more
+     * information, see <a
      * href="https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html">Using
      * symmetric and asymmetric keys</a> in the <i>Amazon Web Services Key Management
      * Service Developer Guide</i>.</p>
@@ -107,8 +110,9 @@ namespace Model
 
     /**
      * <p>If the encryption type is <code>aws:kms</code>, this optional value specifies
-     * the ID of the symmetric customer managed key to use for encryption of job
-     * results. Amazon S3 only supports symmetric keys. For more information, see <a
+     * the ID of the symmetric customer managed Amazon Web Services KMS CMK to use for
+     * encryption of job results. Amazon S3 only supports symmetric CMKs. For more
+     * information, see <a
      * href="https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html">Using
      * symmetric and asymmetric keys</a> in the <i>Amazon Web Services Key Management
      * Service Developer Guide</i>.</p>
@@ -117,8 +121,9 @@ namespace Model
 
     /**
      * <p>If the encryption type is <code>aws:kms</code>, this optional value specifies
-     * the ID of the symmetric customer managed key to use for encryption of job
-     * results. Amazon S3 only supports symmetric keys. For more information, see <a
+     * the ID of the symmetric customer managed Amazon Web Services KMS CMK to use for
+     * encryption of job results. Amazon S3 only supports symmetric CMKs. For more
+     * information, see <a
      * href="https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html">Using
      * symmetric and asymmetric keys</a> in the <i>Amazon Web Services Key Management
      * Service Developer Guide</i>.</p>
@@ -127,8 +132,9 @@ namespace Model
 
     /**
      * <p>If the encryption type is <code>aws:kms</code>, this optional value specifies
-     * the ID of the symmetric customer managed key to use for encryption of job
-     * results. Amazon S3 only supports symmetric keys. For more information, see <a
+     * the ID of the symmetric customer managed Amazon Web Services KMS CMK to use for
+     * encryption of job results. Amazon S3 only supports symmetric CMKs. For more
+     * information, see <a
      * href="https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html">Using
      * symmetric and asymmetric keys</a> in the <i>Amazon Web Services Key Management
      * Service Developer Guide</i>.</p>
@@ -137,8 +143,9 @@ namespace Model
 
     /**
      * <p>If the encryption type is <code>aws:kms</code>, this optional value specifies
-     * the ID of the symmetric customer managed key to use for encryption of job
-     * results. Amazon S3 only supports symmetric keys. For more information, see <a
+     * the ID of the symmetric customer managed Amazon Web Services KMS CMK to use for
+     * encryption of job results. Amazon S3 only supports symmetric CMKs. For more
+     * information, see <a
      * href="https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html">Using
      * symmetric and asymmetric keys</a> in the <i>Amazon Web Services Key Management
      * Service Developer Guide</i>.</p>
@@ -147,8 +154,9 @@ namespace Model
 
     /**
      * <p>If the encryption type is <code>aws:kms</code>, this optional value specifies
-     * the ID of the symmetric customer managed key to use for encryption of job
-     * results. Amazon S3 only supports symmetric keys. For more information, see <a
+     * the ID of the symmetric customer managed Amazon Web Services KMS CMK to use for
+     * encryption of job results. Amazon S3 only supports symmetric CMKs. For more
+     * information, see <a
      * href="https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html">Using
      * symmetric and asymmetric keys</a> in the <i>Amazon Web Services Key Management
      * Service Developer Guide</i>.</p>

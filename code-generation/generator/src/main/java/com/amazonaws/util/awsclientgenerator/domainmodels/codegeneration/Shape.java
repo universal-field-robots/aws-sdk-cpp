@@ -47,7 +47,6 @@ public class Shape {
     private boolean exception;
     private boolean sensitive;
     private boolean hasPreSignedUrl;
-    private boolean document;
 
     public boolean isMap() {
         return "map".equals(type.toLowerCase());
@@ -81,10 +80,6 @@ public class Shape {
 
     public boolean isBoolean() {
         return "boolean".equals(type.toLowerCase());
-    }
-
-    public boolean isDocument() {
-        return "structure".equals(type.toLowerCase()) && document;
     }
 
     public boolean isPrimitive() {

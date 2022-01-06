@@ -6588,8 +6588,7 @@
         "AWS::ECS::TaskDefinition",
         "AWS::EFS::AccessPoint",
         "AWS::EFS::FileSystem",
-        "AWS::EKS::Cluster",
-        "AWS::OpenSearch::Domain"
+        "AWS::EKS::Cluster"
       ]
     },
     "ResourceTypeList":{

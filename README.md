@@ -56,21 +56,21 @@ __Jump To:__
    * For Auto Make build systems:
    ```sh
    cd <BUILD_DIR>
-   cmake <path-to-root-of-this-source-code> -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=<path-to-install>
+   cmake <path-to-root-of-this-source-code> -DCMAKE_BUILD_TYPE=Debug
    make
-   make install
+   sudo make install
    ```
 
    * For Visual Studio:
    ```sh
    cd <BUILD_DIR>
-   cmake <path-to-root-of-this-source-code> -G "Visual Studio 15 Win64" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=<path-to-install>
+   cmake <path-to-root-of-this-source-code> -G "Visual Studio 15 Win64" -DCMAKE_BUILD_TYPE=Debug
    msbuild ALL_BUILD.vcxproj /p:Configuration=Debug
    ```
 
    * For macOS - Xcode:
    ```sh
-   cmake <path-to-root-of-this-source-code> -G Xcode -DTARGET_ARCH="APPLE" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=<path-to-install>
+   cmake <path-to-root-of-this-source-code> -G Xcode -DTARGET_ARCH="APPLE" -DCMAKE_BUILD_TYPE=Debug
    xcodebuild -target ALL_BUILD
    ```
 #### Other Dependencies:

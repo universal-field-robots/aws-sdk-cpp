@@ -48,9 +48,6 @@ public class JsonCppClientGenerator extends CppClientGenerator {
         if (shape.isResult() && shape.hasEventStreamMembers())
             return null;
 
-        if (shape.isDocument())
-            return null;
-
         //we only want to override json related stuff.
         if (shape.isRequest() || shape.isEnum() || shape.hasEventPayloadMembers() && shape.hasBlobMembers()) {
             return super.generateModelHeaderFile(serviceModel, shapeEntry);
@@ -98,9 +95,6 @@ public class JsonCppClientGenerator extends CppClientGenerator {
             return null;
 
         if (shape.isEventStream())
-            return null;
-
-        if (shape.isDocument())
             return null;
 
         if (shape.isEnum()) {

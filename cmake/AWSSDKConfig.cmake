@@ -129,13 +129,11 @@ endif()
 get_filename_component(TEMP_PATH "${AWSSDK_CORE_LIB_FILE}" PATH)
 get_filename_component(TEMP_NAME "${TEMP_PATH}" NAME)
 
-if (LIB_SEARCH_PREFIX)
-    while (NOT TEMP_NAME STREQUAL "${LIB_SEARCH_PREFIX}")
-        set(TEMP_PLATFORM_PREFIX "${TEMP_NAME}/${TEMP_PLATFORM_PREFIX}")
-        get_filename_component(TEMP_PATH "${TEMP_PATH}" PATH)
-        get_filename_component(TEMP_NAME "${TEMP_PATH}" NAME)
-    endwhile()
-endif()
+while (NOT TEMP_NAME STREQUAL ${LIB_SEARCH_PREFIX})
+    set(TEMP_PLATFORM_PREFIX "${TEMP_NAME}/${TEMP_PLATFORM_PREFIX}")
+    get_filename_component(TEMP_PATH "${TEMP_PATH}" PATH)
+    get_filename_component(TEMP_NAME "${TEMP_PATH}" NAME)
+endwhile()
 
 set(AWSSDK_PLATFORM_PREFIX "${TEMP_PLATFORM_PREFIX}")
 

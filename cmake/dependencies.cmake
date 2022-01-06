@@ -8,6 +8,10 @@ define_property(TARGET PROPERTY LINK_LIBRARIES_ALL
 # Compute list of all target links (direct and indirect) for given library
 # Result is stored in LINK_LIBRARIES_ALL target property.
 function(compute_links lib)
+    get_target_property(type ${lib} TYPE)
+    if (${type} STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
     if(${lib}_IN_PROGRESS)
         message(FATAL_ERROR "Circular dependency for library '${lib}'")
     endif()
@@ -31,6 +35,10 @@ function(compute_links lib)
     foreach(link ${links})
         if(TARGET ${link}) # Collect only target links
             compute_links(${link})
+            get_target_property(type ${link} TYPE)
+            if (${type} STREQUAL "INTERFACE_LIBRARY")
+                return()
+            endif()
             get_target_property(link_links_all ${link} LINK_LIBRARIES_ALL)
             set_property(TARGET ${lib} APPEND PROPERTY
                 LINK_LIBRARIES_ALL ${link} ${link_links_all}
